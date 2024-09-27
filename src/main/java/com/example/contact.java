@@ -10,7 +10,6 @@ public class contact {
     private String nombre;
     private String telefono;
 
-    // Constructor de la clase Contact
     public contact(String nombre, String telefono) {
         this.nombre = nombre;
         this.telefono = telefono;
@@ -25,7 +24,6 @@ public class contact {
     }
 
     public static void main(String[] args) {
-        // Crear la lista de contactos simulada con más contactos para verificar el scroll
         List<contact> contactosOriginales = new ArrayList<>(); // Lista original completa
         contactosOriginales.add(new contact("Juan Pérez", "123456789"));
         contactosOriginales.add(new contact("Ana López", "987654321"));
@@ -39,41 +37,35 @@ public class contact {
         contactosOriginales.add(new contact("Marta Díaz", "444555666"));
         contactosOriginales.add(new contact("Rosa Jiménez", "777888999"));
 
-        // Lista de contactos que se muestra (inicialmente la misma que contactosOriginales)
         List<contact> contactosFiltrados = new ArrayList<>(contactosOriginales);
 
-        // Crear la ventana principal
-        JFrame frame = new JFrame("Agenda de Contactos");
-        frame.setLayout(new BorderLayout()); // Usar BorderLayout para posicionar los elementos
+        List<Grupo> grupos = new ArrayList<>(); // Lista de grupos
 
-        // Crear un panel que contendrá la lista de contactos
+        JFrame frame = new JFrame("Agenda de Contactes");
+        frame.setLayout(new BorderLayout());
+
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // Organiza los contactos en columnas verticales
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        // Función para actualizar la lista de contactos mostrada
         Runnable actualizarLista = new Runnable() {
             public void run() {
-                panel.removeAll(); // Limpiar el panel de contactos
+                panel.removeAll();
                 for (contact contacto : contactosFiltrados) {
                     JPanel contactoPanel = new JPanel();
                     contactoPanel.setLayout(new FlowLayout());
 
-                    // Etiqueta con el nombre y teléfono del contacto
                     JLabel nombreLabel = new JLabel(contacto.getNombre() + " (" + contacto.getTelefono() + ")");
                     contactoPanel.add(nombreLabel);
 
-                    // Botón "Llamar" (no funcional por ahora)
-                    JButton llamarButton = new JButton("Llamar");
+                    JButton llamarButton = new JButton("Trucar");
                     llamarButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            // Muestra un mensaje simulado cuando se pulsa el botón "Llamar"
-                            JOptionPane.showMessageDialog(frame, "Llamando a " + contacto.getNombre());
+                            JOptionPane.showMessageDialog(frame, "Tracant a " + contacto.getNombre());
                         }
                     });
                     contactoPanel.add(llamarButton);
 
-                    // Agregar el panel del contacto al panel principal
                     panel.add(contactoPanel);
                 }
                 panel.revalidate();
@@ -81,21 +73,33 @@ public class contact {
             }
         };
 
-        // Crear el campo de búsqueda
         JTextField buscador = new JTextField();
         buscador.setText("Buscador");
-        buscador.setPreferredSize(new Dimension(400, 30)); // Tamaño del campo de búsqueda
+        buscador.setPreferredSize(new Dimension(250, 30));
+        buscador.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (buscador.getText().equals("Buscador")) {
+                    buscador.setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (buscador.getText().isEmpty()) {
+                    buscador.setText("Buscador");
+                }
+            }
+        });
         buscador.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 String filtro = buscador.getText().toLowerCase();
-                contactosFiltrados.clear(); // Limpiar la lista filtrada
+                contactosFiltrados.clear();
 
                 if (filtro.isEmpty()) {
-                    // Si no hay filtro, mostrar todos los contactos
                     contactosFiltrados.addAll(contactosOriginales);
                 } else {
-                    // Filtrar contactos por nombre o teléfono
                     for (contact contacto : contactosOriginales) {
                         if (contacto.getNombre().toLowerCase().contains(filtro) ||
                             contacto.getTelefono().contains(filtro)) {
@@ -103,24 +107,124 @@ public class contact {
                         }
                     }
                 }
-                // Actualizar la lista de contactos con los contactos filtrados
                 actualizarLista.run();
             }
         });
 
-        // Crear un JScrollPane y añadir el panel de contactos dentro de él
+        // Botón "Añadir Grupo"
+        JButton btnAñadirGrupo = new JButton("Afegir Grup");
+        btnAñadirGrupo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new JDialog(frame, "Crear Grup", true);
+                dialog.setLayout(new BorderLayout());
+
+                JTextField nombreGrupo = new JTextField("Nom del Grup");
+                dialog.add(nombreGrupo, BorderLayout.NORTH);
+
+                JPanel listaContactos = new JPanel();
+                listaContactos.setLayout(new BoxLayout(listaContactos, BoxLayout.Y_AXIS));
+
+                JCheckBox[] checkBoxes = new JCheckBox[contactosOriginales.size()];
+                for (int i = 0; i < contactosOriginales.size(); i++) {
+                    checkBoxes[i] = new JCheckBox(contactosOriginales.get(i).getNombre());
+                    listaContactos.add(checkBoxes[i]);
+                }
+
+                dialog.add(new JScrollPane(listaContactos), BorderLayout.CENTER);
+
+                JButton btnCrear = new JButton("Crear Grup");
+                btnCrear.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        List<contact> grupo = new ArrayList<>();
+                        for (int i = 0; i < checkBoxes.length; i++) {
+                            if (checkBoxes[i].isSelected()) {
+                                grupo.add(contactosOriginales.get(i));
+                            }
+                        }
+                        if (!grupo.isEmpty()) {
+                            grupos.add(new Grupo(nombreGrupo.getText(), grupo));
+                            JOptionPane.showMessageDialog(dialog, "Grupo creado: " + nombreGrupo.getText());
+                        } else {
+                            JOptionPane.showMessageDialog(dialog, "No se han seleccionado contactos.");
+                        }
+                        dialog.dispose();
+                    }
+                });
+
+                dialog.add(btnCrear, BorderLayout.SOUTH);
+                dialog.setSize(400, 400);
+                dialog.setVisible(true);
+            }
+        });
+
+        // Botón "Grupos" para mostrar los grupos creados
+        JButton btnGrupos = new JButton("Grups");
+        btnGrupos.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new JDialog(frame, "Grups", true);
+                dialog.setLayout(new BorderLayout());
+
+                JPanel listaGrupos = new JPanel();
+                listaGrupos.setLayout(new BoxLayout(listaGrupos, BoxLayout.Y_AXIS));
+
+                if (grupos.isEmpty()) {
+                    listaGrupos.add(new JLabel("No hi han grups afegits."));
+                } else {
+                    for (Grupo grupo : grupos) {
+                        JLabel nombreGrupo = new JLabel("Grup: " + grupo.getNombre());
+                        listaGrupos.add(nombreGrupo);
+
+                        for (contact contacto : grupo.getContactos()) {
+                            JLabel contactoLabel = new JLabel(" - " + contacto.getNombre() + " (" + contacto.getTelefono() + ")");
+                            listaGrupos.add(contactoLabel);
+                        }
+                    }
+                }
+
+                dialog.add(new JScrollPane(listaGrupos), BorderLayout.CENTER);
+                dialog.setSize(400, 300);
+                dialog.setVisible(true);
+            }
+        });
+
+        // Panel superior con los botones y el buscador
+        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelSuperior.add(buscador);
+        panelSuperior.add(btnAñadirGrupo);
+        panelSuperior.add(btnGrupos);
+
         JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Siempre mostrar el scroll vertical
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        // Añadir los componentes a la ventana
-        frame.add(buscador, BorderLayout.NORTH); // Campo de búsqueda en la parte superior
-        frame.add(scrollPane, BorderLayout.CENTER); // Lista de contactos con scroll en el centro
+        frame.add(panelSuperior, BorderLayout.NORTH);
+        frame.add(scrollPane, BorderLayout.CENTER);
 
-        frame.setSize(600, 600); // Tamaño de la ventana
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Cerrar la aplicación al salir
-        frame.setVisible(true); // Hacer visible la ventana
+        frame.setSize(600, 600);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
 
-        // Mostrar la lista inicial de contactos
         actualizarLista.run();
+    }
+}
+
+// Clase para representar los grupos
+class Grupo {
+    private String nombre;
+    private List<contact> contactos;
+
+    public Grupo(String nombre, List<contact> contactos) {
+        this.nombre = nombre;
+        this.contactos = contactos;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public List<contact> getContactos() {
+        return contactos;
     }
 }
