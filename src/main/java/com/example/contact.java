@@ -15,31 +15,36 @@ public class contact {
         this.telefono = telefono;
     }
 
-    public String getNombre() {
+    public String getNom() {
         return nombre;
     }
 
-    public String getTelefono() {
+    public String getTelefon() {
         return telefono;
     }
 
     public static void main(String[] args) {
-        List<contact> contactosOriginales = new ArrayList<>(); // Lista original completa
-        contactosOriginales.add(new contact("Juan Pérez", "123456789"));
-        contactosOriginales.add(new contact("Ana López", "987654321"));
-        contactosOriginales.add(new contact("Carlos Ramírez", "555555555"));
-        contactosOriginales.add(new contact("María García", "444444444"));
-        contactosOriginales.add(new contact("José Fernández", "123123123"));
-        contactosOriginales.add(new contact("Laura Martínez", "654654654"));
-        contactosOriginales.add(new contact("Pedro Sánchez", "111111111"));
-        contactosOriginales.add(new contact("Lucía Torres", "222222222"));
-        contactosOriginales.add(new contact("Andrés González", "333333333"));
-        contactosOriginales.add(new contact("Marta Díaz", "444555666"));
-        contactosOriginales.add(new contact("Rosa Jiménez", "777888999"));
+        // Mostrar la ventana de registro/inicio de sesión
+        registre.mostrarRegistre();
+    }
 
-        List<contact> contactosFiltrados = new ArrayList<>(contactosOriginales);
+    public static void mostrarAgenda() {
+        // Lista original de contactos
+        List<contact> contactesOriginals = new ArrayList<>();
+        contactesOriginals.add(new contact("Juan Pérez", "123456789"));
+        contactesOriginals.add(new contact("Ana López", "987654321"));
+        contactesOriginals.add(new contact("Carlos Ramírez", "555555555"));
+        contactesOriginals.add(new contact("María García", "444444444"));
+        contactesOriginals.add(new contact("José Fernández", "123123123"));
+        contactesOriginals.add(new contact("Laura Martínez", "654654654"));
+        contactesOriginals.add(new contact("Pedro Sánchez", "111111111"));
+        contactesOriginals.add(new contact("Lucía Torres", "222222222"));
+        contactesOriginals.add(new contact("Andrés González", "333333333"));
+        contactesOriginals.add(new contact("Marta Díaz", "444555666"));
+        contactesOriginals.add(new contact("Rosa Jiménez", "777888999"));
 
-        List<Grupo> grupos = new ArrayList<>(); // Lista de grupos
+        List<contact> contactesFiltrats = new ArrayList<>(contactesOriginals);
+        List<Grup> grups = new ArrayList<>();
 
         JFrame frame = new JFrame("Agenda de Contactes");
         frame.setLayout(new BorderLayout());
@@ -47,30 +52,25 @@ public class contact {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        Runnable actualizarLista = new Runnable() {
-            public void run() {
-                panel.removeAll();
-                for (contact contacto : contactosFiltrados) {
-                    JPanel contactoPanel = new JPanel();
-                    contactoPanel.setLayout(new FlowLayout());
+        Runnable actualizarLlista = () -> {
+            panel.removeAll();
+            for (contact contacte : contactesFiltrats) {
+                JPanel contactePanel = new JPanel();
+                contactePanel.setLayout(new FlowLayout());
 
-                    JLabel nombreLabel = new JLabel(contacto.getNombre() + " (" + contacto.getTelefono() + ")");
-                    contactoPanel.add(nombreLabel);
+                JLabel nomLabel = new JLabel(contacte.getNom() + " (" + contacte.getTelefon() + ")");
+                contactePanel.add(nomLabel);
 
-                    JButton llamarButton = new JButton("Trucar");
-                    llamarButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            JOptionPane.showMessageDialog(frame, "Tracant a " + contacto.getNombre());
-                        }
-                    });
-                    contactoPanel.add(llamarButton);
+                JButton trucarButton = new JButton("Trucar");
+                trucarButton.addActionListener(e -> {
+                    JOptionPane.showMessageDialog(frame, "Tracant a " + contacte.getNom());
+                });
+                contactePanel.add(trucarButton);
 
-                    panel.add(contactoPanel);
-                }
-                panel.revalidate();
-                panel.repaint();
+                panel.add(contactePanel);
             }
+            panel.revalidate();
+            panel.repaint();
         };
 
         JTextField buscador = new JTextField();
@@ -94,137 +94,128 @@ public class contact {
         buscador.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                String filtro = buscador.getText().toLowerCase();
-                contactosFiltrados.clear();
+                String filtre = buscador.getText().toLowerCase();
+                contactesFiltrats.clear();
 
-                if (filtro.isEmpty()) {
-                    contactosFiltrados.addAll(contactosOriginales);
+                if (filtre.isEmpty()) {
+                    contactesFiltrats.addAll(contactesOriginals);
                 } else {
-                    for (contact contacto : contactosOriginales) {
-                        if (contacto.getNombre().toLowerCase().contains(filtro) ||
-                            contacto.getTelefono().contains(filtro)) {
-                            contactosFiltrados.add(contacto);
+                    for (contact contacte : contactesOriginals) {
+                        if (contacte.getNom().toLowerCase().contains(filtre) ||
+                                contacte.getTelefon().contains(filtre)) {
+                            contactesFiltrats.add(contacte);
                         }
                     }
                 }
-                actualizarLista.run();
+                actualizarLlista.run();
             }
         });
 
-        // Botón "Añadir Grupo"
-        JButton btnAñadirGrupo = new JButton("Afegir Grup");
-        btnAñadirGrupo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new JDialog(frame, "Crear Grup", true);
-                dialog.setLayout(new BorderLayout());
+        // Boto "Afegir Grupo"
+        JButton btAfegirGrup = new JButton("Afegir Grup");
+        btAfegirGrup.addActionListener(e -> {
+            JDialog dialog = new JDialog(frame, "Crear Grup", true);
+            dialog.setLayout(new BorderLayout());
 
-                JTextField nombreGrupo = new JTextField("Nom del Grup");
-                dialog.add(nombreGrupo, BorderLayout.NORTH);
+            JTextField nomGrup = new JTextField("Nom del Grup");
+            dialog.add(nomGrup, BorderLayout.NORTH);
 
-                JPanel listaContactos = new JPanel();
-                listaContactos.setLayout(new BoxLayout(listaContactos, BoxLayout.Y_AXIS));
+            JPanel llistaContactes = new JPanel();
+            llistaContactes.setLayout(new BoxLayout(llistaContactes, BoxLayout.Y_AXIS));
 
-                JCheckBox[] checkBoxes = new JCheckBox[contactosOriginales.size()];
-                for (int i = 0; i < contactosOriginales.size(); i++) {
-                    checkBoxes[i] = new JCheckBox(contactosOriginales.get(i).getNombre());
-                    listaContactos.add(checkBoxes[i]);
-                }
+            JCheckBox[] checkBoxes = new JCheckBox[contactesOriginals.size()];
+            for (int i = 0; i < contactesOriginals.size(); i++) {
+                checkBoxes[i] = new JCheckBox(contactesOriginals.get(i).getNom());
+                llistaContactes.add(checkBoxes[i]);
+            }
 
-                dialog.add(new JScrollPane(listaContactos), BorderLayout.CENTER);
+            dialog.add(new JScrollPane(llistaContactes), BorderLayout.CENTER);
 
-                JButton btnCrear = new JButton("Crear Grup");
-                btnCrear.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        List<contact> grupo = new ArrayList<>();
-                        for (int i = 0; i < checkBoxes.length; i++) {
-                            if (checkBoxes[i].isSelected()) {
-                                grupo.add(contactosOriginales.get(i));
-                            }
-                        }
-                        if (!grupo.isEmpty()) {
-                            grupos.add(new Grupo(nombreGrupo.getText(), grupo));
-                            JOptionPane.showMessageDialog(dialog, "Grupo creado: " + nombreGrupo.getText());
-                        } else {
-                            JOptionPane.showMessageDialog(dialog, "No se han seleccionado contactos.");
-                        }
-                        dialog.dispose();
+            JButton btCrear = new JButton("Crear Grup");
+            btCrear.addActionListener(e1 -> {
+                List<contact> grup = new ArrayList<>();
+                for (int i = 0; i < checkBoxes.length; i++) {
+                    if (checkBoxes[i].isSelected()) {
+                        grup.add(contactesOriginals.get(i));
                     }
-                });
+                }
+                if (!grup.isEmpty()) {
+                    grups.add(new Grup(nomGrup.getText(), grup));
+                    JOptionPane.showMessageDialog(dialog, "Grupo creado: " + nomGrup.getText());
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "No se han seleccionado contactos.");
+                }
+                dialog.dispose();
+            });
 
-                dialog.add(btnCrear, BorderLayout.SOUTH);
-                dialog.setSize(400, 400);
-                dialog.setVisible(true);
-            }
+            dialog.add(btCrear, BorderLayout.SOUTH);
+            dialog.setSize(400, 400);
+            dialog.setVisible(true);
         });
 
-        // Botón "Grupos" para mostrar los grupos creados
+        // Botón "Grupos"
         JButton btnGrupos = new JButton("Grups");
-        btnGrupos.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new JDialog(frame, "Grups", true);
-                dialog.setLayout(new BorderLayout());
+        btnGrupos.addActionListener(e -> {
+            JDialog dialog = new JDialog(frame, "Grups", true);
+            dialog.setLayout(new BorderLayout());
 
-                JPanel listaGrupos = new JPanel();
-                listaGrupos.setLayout(new BoxLayout(listaGrupos, BoxLayout.Y_AXIS));
+            JPanel llistaGrups = new JPanel();
+            llistaGrups.setLayout(new BoxLayout(llistaGrups, BoxLayout.Y_AXIS));
 
-                if (grupos.isEmpty()) {
-                    listaGrupos.add(new JLabel("No hi han grups afegits."));
-                } else {
-                    for (Grupo grupo : grupos) {
-                        JLabel nombreGrupo = new JLabel("Grup: " + grupo.getNombre());
-                        listaGrupos.add(nombreGrupo);
+            if (grups.isEmpty()) {
+                llistaGrups.add(new JLabel("No hi han grups afegits."));
+            } else {
+                for (Grup grup : grups) {
+                    JLabel nomGrup = new JLabel("Grup: " + grup.getNom());
+                    llistaGrups.add(nomGrup);
 
-                        for (contact contacto : grupo.getContactos()) {
-                            JLabel contactoLabel = new JLabel(" - " + contacto.getNombre() + " (" + contacto.getTelefono() + ")");
-                            listaGrupos.add(contactoLabel);
-                        }
+                    for (contact contacte : grup.getContactes()) {
+                        JLabel contacteLabel = new JLabel(" - " + contacte.getNom() + " (" + contacte.getTelefon() + ")");
+                        llistaGrups.add(contacteLabel);
                     }
                 }
-
-                dialog.add(new JScrollPane(listaGrupos), BorderLayout.CENTER);
-                dialog.setSize(400, 300);
-                dialog.setVisible(true);
             }
+
+            dialog.add(new JScrollPane(llistaGrups), BorderLayout.CENTER);
+            dialog.setSize(400, 300);
+            dialog.setVisible(true);
         });
 
-        // Panel superior con los botones y el buscador
-        JPanel panelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelSuperior.add(buscador);
-        panelSuperior.add(btnAñadirGrupo);
-        panelSuperior.add(btnGrupos);
+        // Panel superior
+        JPanel panellSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panellSuperior.add(buscador);
+        panellSuperior.add(btAfegirGrup);
+        panellSuperior.add(btnGrupos);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        frame.add(panelSuperior, BorderLayout.NORTH);
+        frame.add(panellSuperior, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
 
         frame.setSize(600, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        actualizarLista.run();
-    }
-}
-
-// Clase para representar los grupos
-class Grupo {
-    private String nombre;
-    private List<contact> contactos;
-
-    public Grupo(String nombre, List<contact> contactos) {
-        this.nombre = nombre;
-        this.contactos = contactos;
+        actualizarLlista.run();
     }
 
-    public String getNombre() {
-        return nombre;
-    }
+    // Clase para representar los grupos
+    static class Grup {
+        private String nom;
+        private List<contact> contactes;
 
-    public List<contact> getContactos() {
-        return contactos;
+        public Grup(String nom, List<contact> contactes) {
+            this.nom = nom;
+            this.contactes = contactes;
+        }
+
+        public String getNom() {
+            return nom;
+        }
+
+        public List<contact> getContactes() {
+            return contactes;
+        }
     }
 }
