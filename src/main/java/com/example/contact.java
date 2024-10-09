@@ -1,5 +1,7 @@
 package com.example;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -24,8 +26,20 @@ public class contact {
     }
 
     public static void main(String[] args) {
+        
         // Mostrar la ventana de registro/inicio de sesión
         registre.mostrarRegistre();
+
+        // Intentar conectar a la base de datos de Odoo
+        Connection conexion = null;
+        try {
+            // Aquí probamos la conexión
+            conexion = odoo.conectar();
+        } catch (SQLException e) {
+            System.out.println("Error al conectar a la base de datos: " + e.getMessage());
+            e.printStackTrace();
+            return;  // Termina el programa si no se puede conectar
+        }
     }
 
     public static void mostrarAgenda() {
