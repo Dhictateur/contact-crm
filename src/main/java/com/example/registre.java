@@ -4,17 +4,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import java.net.URL;
 
 public class registre {
+
     // Método para mostrar la interfaz de registro/inicio de sesión
     public static void mostrarRegistre() {
         JFrame frame = new JFrame("Registre/Iniciar Sessió");
-        frame.setLayout(new GridLayout(4, 2));
+        frame.setLayout(new GridLayout(5, 2));
 
         // Etiquetas y campos de texto
         frame.add(new JLabel("Nom:"));
@@ -25,6 +26,10 @@ public class registre {
         JPasswordField contrasenyaField = new JPasswordField();
         frame.add(contrasenyaField);
 
+        // Botón para registrar usuario (pendiente de implementar con XML-RPC si fuera necesario)
+        JButton btRegistrarUsuari = new JButton("Registrar Usuari");
+        frame.add(btRegistrarUsuari);
+
         // Botón para iniciar sesión
         JButton btIniciarSessio = new JButton("Iniciar Sessió");
         btIniciarSessio.addActionListener(new ActionListener() {
@@ -33,8 +38,8 @@ public class registre {
                 String nom = nomField.getText();
                 String contrasenya = new String(contrasenyaField.getPassword());
 
-                // Verificar si el usuario existe en la base de datos
-                if (verificarUsuarioEnBaseDeDatos(nom, contrasenya)) {
+                // Verificar si el usuario existe en Odoo usando XML-RPC
+                if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(frame, "Iniciando sesión como: " + nom);
                     frame.dispose(); // Cerrar la ventana de registro
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
@@ -42,7 +47,7 @@ public class registre {
                     JOptionPane.showMessageDialog(frame, "Credenciales incorrectas.");
                 }
 
-                // Limpia los campos
+                // Limpiar campos
                 nomField.setText("");
                 contrasenyaField.setText("");
             }
@@ -55,30 +60,32 @@ public class registre {
         frame.setVisible(true);
     }
 
-    // Método para verificar el usuario en la base de datos
-    public static boolean verificarUsuarioEnBaseDeDatos(String nombre, String contrasena) {
-        String url = "jdbc:postgresql://localhost:5432/test"; // URL de la base de datos
-        String user = "odoo"; // Usuario de la base de datos
-        String password = "1234"; // Contraseña del usuario de la base de datos
+    // Método para verificar el usuario en Odoo usando XML-RPC
+    public static boolean verificarUsuarioEnOdoo(String nombre, String contrasenya) {
+        try {
+            // Configuración del cliente XML-RPC
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));  // URL del servidor Odoo
+            XmlRpcClient client = new XmlRpcClient();
+            client.setConfig(config);
 
-        String query = "SELECT * FROM test_users WHERE nombre = ? AND pass = ?";
+            // Llamada a la función 'authenticate' de Odoo
+            Object[] params = new Object[]{
+                    "test", // Nombre de la base de datos de Odoo
+                    nombre,         // Nombre de usuario
+                    contrasenya,    // Contraseña
+                    new HashMap<>() // Sin contexto adicional
+            };
 
-        try (Connection conn = DriverManager.getConnection(url, user, password);
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            // Autenticar usuario
+            Object uid = client.execute("authenticate", params);
 
-            pstmt.setString(1, nombre);
-            pstmt.setString(2, contrasena);
+            // Si el UID no es null, la autenticación fue exitosa
+            return uid != null;
 
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return true; // Usuario encontrado
-            }
-
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-
-        return false; // Usuario no encontrado o error
     }
 }
