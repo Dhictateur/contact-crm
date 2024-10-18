@@ -26,7 +26,6 @@ public class contact {
     }
 
     public static void main(String[] args) {
-        
         // Mostrar la ventana de registro/inicio de sesión
         registre.mostrarRegistre();
 
@@ -207,11 +206,39 @@ public class contact {
         frame.add(panellSuperior, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
 
+        // Crear un panel para el botón "Logout"
+        JPanel panelLogout = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnLogout = new JButton("Logout");
+        btnLogout.addActionListener(e -> {
+            // Cerrar sesión en la API de Odoo (si fuese necesario)
+            try {
+                registre.cerrarSesion();  // Método que puedes implementar en odoo.java
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            // Cerrar la ventana actual de la agenda
+            frame.dispose();
+
+            // Volver a la pantalla de registro/inicio de sesión
+            registre.mostrarRegistre();
+        });
+        panelLogout.add(btnLogout);
+
+        // Agregar el panel de logout al final del frame
+        frame.add(panelLogout, BorderLayout.SOUTH);
+
+        // Asegúrate de que el tamaño del frame es adecuado
         frame.setSize(600, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
+        // Llamar al método para actualizar la lista
         actualizarLlista.run();
+
+        // Revalidar y repintar el frame
+        frame.revalidate();
+        frame.repaint();
     }
 
     // Clase para representar los grupos

@@ -11,27 +11,37 @@ import java.net.URL;
 
 public class registre {
 
+    private static Object uid;  // Almacena el UID del usuario autenticado
+
     // Método para mostrar la interfaz de inicio de sesión
     public static void mostrarRegistre() {
-        JFrame frame = new JFrame("Iniciar Sessió");
+        JFrame frame = new JFrame("Iniciar Sesión");
         frame.setLayout(new GridLayout(3, 2));
 
         // Etiquetas y campos de texto
-        frame.add(new JLabel("Nom:"));
+        JLabel nomLabel = new JLabel("Nombre:");
         JTextField nomField = new JTextField();
-        frame.add(nomField);
-
-        frame.add(new JLabel("Contrasenya:"));
+        JLabel contrasenyaLabel = new JLabel("Contraseña:");
         JPasswordField contrasenyaField = new JPasswordField();
+
+        frame.add(nomLabel);
+        frame.add(nomField);
+        frame.add(contrasenyaLabel);
         frame.add(contrasenyaField);
 
         // Botón para iniciar sesión
-        JButton btIniciarSessio = new JButton("Iniciar Sessió");
+        JButton btIniciarSessio = new JButton("Iniciar Sesión");
         btIniciarSessio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nom = nomField.getText();
                 String contrasenya = new String(contrasenyaField.getPassword());
+
+                // Validar campos vacíos
+                if (nom.isEmpty() || contrasenya.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Por favor, complete todos los campos.");
+                    return;
+                }
 
                 // Verificar si el usuario existe en Odoo usando XML-RPC
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
@@ -47,6 +57,7 @@ public class registre {
                 contrasenyaField.setText("");
             }
         });
+
         frame.add(btIniciarSessio);
 
         // Configuración del marco
@@ -73,7 +84,7 @@ public class registre {
             };
 
             // Autenticar usuario
-            Object uid = client.execute("authenticate", params);
+            uid = client.execute("authenticate", params);
 
             // Si el UID no es null, la autenticación fue exitosa
             return uid != null;
@@ -81,6 +92,32 @@ public class registre {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    // Método para cerrar sesión en Odoo (puede que necesites implementar más lógica dependiendo de tu caso)
+    public static void cerrarSesion() {
+        try {
+            // Invalidar el UID (usuario autenticado) para simular cierre de sesión
+            uid = null;
+
+            // Imprimir que se ha cerrado la sesión
+            System.out.println("Sesión cerrada.");
+
+            // Si tienes un JFrame o ventana abierta, aquí podrías cerrarla y volver a mostrar la ventana de inicio de sesión
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                // Cerrar ventana actual
+                JFrame frameActual = (JFrame) javax.swing.FocusManager.getCurrentManager().getActiveWindow();
+                if (frameActual != null) {
+                    frameActual.dispose(); // Cierra la ventana actual
+                }
+
+                // Mostrar la ventana de inicio de sesión
+                registre.mostrarRegistre();
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
