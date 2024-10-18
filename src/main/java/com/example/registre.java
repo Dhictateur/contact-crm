@@ -5,17 +5,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
-import java.util.Map;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import java.net.URL;
 
 public class registre {
 
-    // Método para mostrar la interfaz de registro/inicio de sesión
+    // Método para mostrar la interfaz de inicio de sesión
     public static void mostrarRegistre() {
-        JFrame frame = new JFrame("Registre/Iniciar Sessió");
-        frame.setLayout(new GridLayout(5, 2));
+        JFrame frame = new JFrame("Iniciar Sessió");
+        frame.setLayout(new GridLayout(3, 2));
 
         // Etiquetas y campos de texto
         frame.add(new JLabel("Nom:"));
@@ -25,10 +24,6 @@ public class registre {
         frame.add(new JLabel("Contrasenya:"));
         JPasswordField contrasenyaField = new JPasswordField();
         frame.add(contrasenyaField);
-
-        // Botón para registrar usuario (pendiente de implementar con XML-RPC si fuera necesario)
-        JButton btRegistrarUsuari = new JButton("Registrar Usuari");
-        frame.add(btRegistrarUsuari);
 
         // Botón para iniciar sesión
         JButton btIniciarSessio = new JButton("Iniciar Sessió");
@@ -41,7 +36,7 @@ public class registre {
                 // Verificar si el usuario existe en Odoo usando XML-RPC
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(frame, "Iniciando sesión como: " + nom);
-                    frame.dispose(); // Cerrar la ventana de registro
+                    frame.dispose(); // Cerrar la ventana de inicio de sesión
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
                 } else {
                     JOptionPane.showMessageDialog(frame, "Credenciales incorrectas.");
@@ -55,7 +50,7 @@ public class registre {
         frame.add(btIniciarSessio);
 
         // Configuración del marco
-        frame.setSize(300, 200);
+        frame.setSize(300, 150);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
@@ -71,7 +66,7 @@ public class registre {
 
             // Llamada a la función 'authenticate' de Odoo
             Object[] params = new Object[]{
-                    "test", // Nombre de la base de datos de Odoo
+                    "test",         // Nombre de la base de datos de Odoo
                     nombre,         // Nombre de usuario
                     contrasenya,    // Contraseña
                     new HashMap<>() // Sin contexto adicional
