@@ -2,6 +2,8 @@ package com.example;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,6 +13,8 @@ import java.util.List;
 public class contact {
     private String nombre;
     private String telefono;
+    public static String userType; // Variable para almacenar el tipo de usuario
+    public static int LoginSuccess;
 
     public contact(String nombre, String telefono) {
         this.nombre = nombre;
@@ -28,17 +32,7 @@ public class contact {
     public static void main(String[] args) {
         // Mostrar la ventana de registro/inicio de sesión
         registre.mostrarRegistre();
-
-        // Intentar conectar a la base de datos de Odoo
-        Connection conexion = null;
-        try {
-            // Aquí probamos la conexión
-            conexion = odoo.conectar();
-        } catch (SQLException e) {
-            System.out.println("Error al conectar a la base de datos: " + e.getMessage());
-            e.printStackTrace();
-            return;  // Termina el programa si no se puede conectar
-        }
+        LoginSuccess = 0;
     }
 
     public static void mostrarAgenda() {
@@ -228,20 +222,18 @@ public class contact {
         // Agregar el panel de logout al final del frame
         frame.add(panelLogout, BorderLayout.SOUTH);
 
-        // Asegúrate de que el tamaño del frame es adecuado
-        frame.setSize(600, 600);
+        // Mostrar tipo de usuario en la parte inferior
+        JLabel userTypeLabel = new JLabel(userType);
+        panelLogout.add(userTypeLabel, BorderLayout.WEST);
+        panelLogout.add(btnLogout, BorderLayout.EAST);
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(600, 400);
         frame.setVisible(true);
 
-        // Llamar al método para actualizar la lista
+        // Actualizar la lista inicialmente
         actualizarLlista.run();
-
-        // Revalidar y repintar el frame
-        frame.revalidate();
-        frame.repaint();
     }
-
-    // Clase para representar los grupos
     static class Grup {
         private String nom;
         private List<contact> contactes;

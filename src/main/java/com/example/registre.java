@@ -1,5 +1,9 @@
 package com.example;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -56,6 +60,20 @@ public class registre {
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(loginFrame, "Iniciando sesión como: " + nom);
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
+                    contact.LoginSuccess = 1;
+                    if (contact.LoginSuccess == 1) { 
+                        Connection conexion = null;
+                        try {
+                            // Aquí probamos la conexión
+                            conexion = odoo.conectar();
+                            // Verificar el tipo de usuario después de iniciar sesión
+                            contact.userType = verificarTipoUsuario(conexion, nom); // Cambia "nombre_user" por el nombre del usuario actual
+                        } catch (SQLException m) {
+                            System.out.println("Error al conectar a la base de datos: " + m.getMessage());
+                            m.printStackTrace();
+                            return;  // Termina el programa si no se puede conectar
+                        }
+                    }
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
                 } else {
                     JOptionPane.showMessageDialog(loginFrame, "Credenciales incorrectas.");
@@ -75,13 +93,33 @@ public class registre {
         loginFrame.setVisible(true); // Mostrar la ventana por primera vez
     }
 
+// Método para verificar si el usuario tiene permisos de administrador
+    private static String verificarTipoUsuario(Connection conexion, String userName) {
+        String tipoUsuario = "User"; // Por defecto, es un usuario normal
+        String sql = "SELECT u.login AS user_name, g.name AS group_name " +
+                    "FROM res_users u " +
+                    "JOIN res_groups_users_rel gu ON u.id = gu.uid " +
+                    "JOIN res_groups g ON gu.gid = g.id " +
+                    "WHERE g.name = '{\"en_US\": \"Settings\"}' AND u.login = '" + userName + "'";
+
+        try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                tipoUsuario = "Admin"; // Si se encuentra un resultado, el usuario es administrador
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println(tipoUsuario);
+        return tipoUsuario;
+    }
+
     // Método para verificar el usuario en Odoo usando XML-RPC
     public static boolean verificarUsuarioEnOdoo(String nombre, String contrasenya) {
         try {
             // Configuración del cliente XML-RPC
             XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
             config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));  // URL del servidor Odoo
-            XmlRpcClient client = new XmlRpcClient();
+            XmlRpcClient client = new XmlRpcClient(); 
             client.setConfig(config);
 
             // Llamada a la función 'authenticate' de Odoo

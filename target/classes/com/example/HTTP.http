@@ -1,0 +1,13 @@
+### Solicitud POST
+POST http://localhost:8069/web/session/authenticate
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "params": {
+    "db": "test",
+    "login": "1234@gmail.com",
+    "password": "1234"
+  }
+}
+
