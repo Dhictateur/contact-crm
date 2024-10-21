@@ -36,9 +36,6 @@ Antes de ejecutar el programa, asegúrate de cumplir con los siguientes requisit
 ## Contribuir
    Si deseas contribuir a este proyecto, por favor envía un pull request o contacta al desarrollador a través de email@example.com.
 
-## Licencia
-   Este proyecto está bajo la Licencia MIT. Puedes consultar más detalles en el archivo LICENSE.
-
 
 
 
