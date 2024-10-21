@@ -17,7 +17,12 @@ import java.net.URL;
 public class registre {
 
     private static Object uid;  // Almacena el UID del usuario autenticado
-    private static JFrame loginFrame;  // Ventana de login para reutilizar
+    static JFrame loginFrame;  // Ventana de login para reutilizar
+
+    // Getter para uid
+    public static Object getUid() {
+        return uid;
+    }
 
     // Método para mostrar la interfaz de inicio de sesión
     public static void mostrarRegistre() {
@@ -60,8 +65,6 @@ public class registre {
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(loginFrame, "Iniciando sesión como: " + nom);
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
-                    contact.LoginSuccess = 1;
-                    if (contact.LoginSuccess == 1) { 
                         Connection conexion = null;
                         try {
                             // Aquí probamos la conexión
@@ -73,7 +76,6 @@ public class registre {
                             m.printStackTrace();
                             return;  // Termina el programa si no se puede conectar
                         }
-                    }
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
                 } else {
                     JOptionPane.showMessageDialog(loginFrame, "Credenciales incorrectas.");
@@ -94,7 +96,7 @@ public class registre {
     }
 
 // Método para verificar si el usuario tiene permisos de administrador
-    private static String verificarTipoUsuario(Connection conexion, String userName) {
+    public static String verificarTipoUsuario(Connection conexion, String userName) {
         String tipoUsuario = "User"; // Por defecto, es un usuario normal
         String sql = "SELECT u.login AS user_name, g.name AS group_name " +
                     "FROM res_users u " +
@@ -118,29 +120,35 @@ public class registre {
         try {
             // Configuración del cliente XML-RPC
             XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));  // URL del servidor Odoo
+            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));
             XmlRpcClient client = new XmlRpcClient(); 
             client.setConfig(config);
-
+    
             // Llamada a la función 'authenticate' de Odoo
             Object[] params = new Object[]{
-                    "test",         // Nombre de la base de datos de Odoo
-                    nombre,         // Nombre de usuario
-                    contrasenya,    // Contraseña
-                    new HashMap<>() // Sin contexto adicional
+                "test",         // Nombre de la base de datos de Odoo
+                nombre,         // Nombre de usuario
+                contrasenya,    // Contraseña
+                new HashMap<>() // Sin contexto adicional
             };
-
+    
             // Autenticar usuario
-            uid = client.execute("authenticate", params);
-
-            // Si el UID no es null, la autenticación fue exitosa
-            return uid != null;
-
+            Object result = client.execute("authenticate", params);
+    
+            // Comprobar si el resultado es un número (UID válido) y no es 0
+            if (result instanceof Integer) {
+                uid = result;  // Almacena el UID del usuario autenticado
+                return (Integer) uid != 0; // La autenticación es exitosa solo si el UID no es 0
+            }
+    
+            return false; // Si el resultado no es un número, la autenticación ha fallado
+    
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
+    
 
     // Método para cerrar sesión en Odoo
     public static void cerrarSesion() {
@@ -156,6 +164,7 @@ public class registre {
             if (frameActual != null) {
                 frameActual.setVisible(false); // Ocultar la ventana actual
             }
+            contact.LoginSuccess = 0;
 
             // Volver a mostrar la ventana de inicio de sesión
             mostrarRegistre();
