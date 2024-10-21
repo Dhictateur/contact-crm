@@ -16,17 +16,16 @@ import java.net.URL;
 
 public class registre {
 
-    private static Object uid;  // Almacena el UID del usuario autenticado
-    static JFrame loginFrame;  // Ventana de login para reutilizar
+    private static Object uid;
+    static JFrame loginFrame;  
 
-    // Getter para uid
     public static Object getUid() {
         return uid;
     }
 
     // Método para mostrar la interfaz de inicio de sesión
     public static void mostrarRegistre() {
-        // Si ya existe la ventana, simplemente la hacemos visible
+        // Si ya existe la ventana la hacemos visible
         if (loginFrame != null) {
             loginFrame.setVisible(true);
             return;
@@ -47,7 +46,7 @@ public class registre {
         loginFrame.add(contrasenyaLabel);
         loginFrame.add(contrasenyaField);
 
-        // Botón para iniciar sesión
+        // Boton inicio
         JButton btIniciarSessio = new JButton("Iniciar Sesión");
         btIniciarSessio.addActionListener(new ActionListener() {
             @Override
@@ -55,7 +54,7 @@ public class registre {
                 String nom = nomField.getText();
                 String contrasenya = new String(contrasenyaField.getPassword());
 
-                // Validar campos vacíos
+                // Validar campos vacios
                 if (nom.isEmpty() || contrasenya.isEmpty()) {
                     JOptionPane.showMessageDialog(loginFrame, "Por favor, complete todos los campos.");
                     return;
@@ -67,10 +66,10 @@ public class registre {
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
                         Connection conexion = null;
                         try {
-                            // Aquí probamos la conexión
+                            // Provamos connexion
                             conexion = odoo.conectar();
-                            // Verificar el tipo de usuario después de iniciar sesión
-                            contact.userType = verificarTipoUsuario(conexion, nom); // Cambia "nombre_user" por el nombre del usuario actual
+                            // Verificar el tipo de usuario
+                            contact.userType = verificarTipoUsuario(conexion, nom);
                         } catch (SQLException m) {
                             System.out.println("Error al conectar a la base de datos: " + m.getMessage());
                             m.printStackTrace();
