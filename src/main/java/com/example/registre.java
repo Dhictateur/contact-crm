@@ -88,13 +88,13 @@ public class registre {
 
         loginFrame.add(btIniciarSessio);
 
-        // Configuración del marco
+        // Macro
         loginFrame.setSize(300, 150);
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         loginFrame.setVisible(true); // Mostrar la ventana por primera vez
     }
 
-// Método para verificar si el usuario tiene permisos de administrador
+// Metodo para ver si es admin
     public static String verificarTipoUsuario(Connection conexion, String userName) {
         String tipoUsuario = "User"; // Por defecto, es un usuario normal
         String sql = "SELECT u.login AS user_name, g.name AS group_name " +
@@ -105,7 +105,7 @@ public class registre {
 
         try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
-                tipoUsuario = "Admin"; // Si se encuentra un resultado, el usuario es administrador
+                tipoUsuario = "Admin"; // Si se encuentra un resultado, el usuario es admin
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,7 +114,7 @@ public class registre {
         return tipoUsuario;
     }
 
-    // Método para verificar el usuario en Odoo usando XML-RPC
+    // Metodo para conexion Odoo > XML-RPC
     public static boolean verificarUsuarioEnOdoo(String nombre, String contrasenya) {
         try {
             // Configuración del cliente XML-RPC
