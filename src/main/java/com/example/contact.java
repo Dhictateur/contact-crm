@@ -5,16 +5,27 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.swing.*;
+
+import org.apache.xmlrpc.XmlRpcException;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class contact {
     private String nombre;
     private String telefono;
     public static String userType; // Variable para almacenar el tipo de usuario
     public static int LoginSuccess;
+
+    private static List<contact> contactesOriginals = new ArrayList<>();
+    private static List<contact> contactesFiltrats = new ArrayList<>();
 
     public contact(String nombre, String telefono) {
         this.nombre = nombre;
@@ -29,26 +40,34 @@ public class contact {
         return telefono;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MalformedURLException, XmlRpcException {
+        odoo.inicializarXmlRpc();
         // Mostrar la ventana de registro/inicio de sesión
         registre.mostrarRegistre();
         LoginSuccess = 0;
     }
 
     public static void mostrarAgenda() {
-        // Lista original de contactos
-        List<contact> contactesOriginals = new ArrayList<>();
-        contactesOriginals.add(new contact("Juan Pérez", "123456789"));
-        contactesOriginals.add(new contact("Ana López", "987654321"));
-        contactesOriginals.add(new contact("Carlos Ramírez", "555555555"));
-        contactesOriginals.add(new contact("María García", "444444444"));
-        contactesOriginals.add(new contact("José Fernández", "123123123"));
-        contactesOriginals.add(new contact("Laura Martínez", "654654654"));
-        contactesOriginals.add(new contact("Pedro Sánchez", "111111111"));
-        contactesOriginals.add(new contact("Lucía Torres", "222222222"));
-        contactesOriginals.add(new contact("Andrés González", "333333333"));
-        contactesOriginals.add(new contact("Marta Díaz", "444555666"));
-        contactesOriginals.add(new contact("Rosa Jiménez", "777888999"));
+        try {
+            // Obtener contactos desde Odoo
+            List<Map<String, Object>> contactosOdoo = odoo.obtenerContactos();
+            
+            // Convertir la lista de Map a una lista de objetos `contact`
+            contactesOriginals = new ArrayList<>();
+            for (Map<String, Object> datos : contactosOdoo) {
+                String name = (String) datos.get("name");
+                String phone = (String) datos.get("phone");
+                contact contacto = new contact(name, phone);
+                contactesOriginals.add(contacto);
+            }
+            
+            // Clonar la lista original a la lista filtrada
+            contactesFiltrats = new ArrayList<>(contactesOriginals);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al obtener contactos de Odoo");
+            return;
+        }
 
         List<contact> contactesFiltrats = new ArrayList<>(contactesOriginals);
         List<Grup> grups = new ArrayList<>();
