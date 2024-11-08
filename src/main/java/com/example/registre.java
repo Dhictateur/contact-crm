@@ -16,6 +16,8 @@ import java.net.URL;
 
 public class registre {
 
+    private static String nombreUsuario;
+
     private static Object uid;
     static JFrame loginFrame;  
 
@@ -63,6 +65,8 @@ public class registre {
                 // Verificar si el usuario existe en Odoo usando XML-RPC
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(loginFrame, "Iniciando sesión como: " + nom);
+                    nombreUsuario = nom;
+                    log.registrarInicioSesion(nom);
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
                         Connection conexion = null;
                         try {
@@ -152,6 +156,9 @@ public class registre {
     // Método para cerrar sesión en Odoo
     public static void cerrarSesion() {
         try {
+            if (uid != null) {
+                log.registrarCierreSesion(nombreUsuario); // Log para cierre de sesión
+            }
             // Invalidar el UID (usuario autenticado) para simular cierre de sesión
             uid = null;
 

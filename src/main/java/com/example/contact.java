@@ -90,6 +90,7 @@ public class contact {
                 JButton trucarButton = new JButton("Trucar");
                 trucarButton.addActionListener(e -> {
                     JOptionPane.showMessageDialog(frame, "Tracant a " + contacte.getNom());
+                    log.registrarLlamada(contacte.getNom());
                 });
                 contactePanel.add(trucarButton);
 
@@ -222,6 +223,7 @@ public class contact {
         // Crear un panel inferior
         JPanel panelInferior = new JPanel(new BorderLayout());
         JPanel panelDerecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelIzquierda = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
         JButton btnLogout = new JButton("Logout");
         btnLogout.addActionListener(e -> {
@@ -240,18 +242,24 @@ public class contact {
         });
         panelInferior.add(btnLogout);
 
-        // Subpanel para la izquierda (botón "Historial" y etiqueta de usuario)
-        JPanel panelIzquierda = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
         // Botón "Historial"
         JButton btnHistorial = new JButton("Historial");
         btnHistorial.addActionListener(e -> {
-            // Crear una ventana emergente vacía
             JDialog historialDialog = new JDialog(frame, "Log", true);
-            historialDialog.setSize(400, 300);
+            historialDialog.setSize(500, 300);
             historialDialog.setLocationRelativeTo(frame);
             historialDialog.setLayout(new BorderLayout());
 
+            JTextArea historialArea = new JTextArea();
+            historialArea.setEditable(false);
+            
+            // Obtener y mostrar el historial
+            List<String> logEntries = log.obtenerHistorial();
+            for (String entry : logEntries) {
+                historialArea.append(entry + "\n");
+            }
+            
+            historialDialog.add(new JScrollPane(historialArea), BorderLayout.CENTER);
             historialDialog.setVisible(true);
         });
 
@@ -267,9 +275,6 @@ public class contact {
         // Agregar los subpaneles al panel inferior principal
         panelInferior.add(panelIzquierda, BorderLayout.WEST);
         panelInferior.add(panelDerecha, BorderLayout.EAST);
-        
-        // Agregar el panel inferior al frame en la posición sur
-        frame.add(panelInferior, BorderLayout.SOUTH);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
