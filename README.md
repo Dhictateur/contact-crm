@@ -34,7 +34,7 @@ Antes de ejecutar el programa, asegúrate de cumplir con los siguientes requisit
    java -cp .:path/to/jar/xmlrpc-client.jar com.example.Main
 
 ## Contribuir
-   Si deseas contribuir a este proyecto, por favor envía un pull request o contacta al desarrollador a través de email@example.com.
+   Si deseas contribuir a este proyecto, por favor envía un pull request o contacta al desarrollador a través de devforcrm@gmail.com.
 
 
 
