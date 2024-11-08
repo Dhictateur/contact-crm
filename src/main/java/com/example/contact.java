@@ -219,8 +219,10 @@ public class contact {
         frame.add(panellSuperior, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Crear un panel para el botón "Logout"
-        JPanel panelLogout = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // Crear un panel inferior
+        JPanel panelInferior = new JPanel(new BorderLayout());
+        JPanel panelDerecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
         JButton btnLogout = new JButton("Logout");
         btnLogout.addActionListener(e -> {
             // Cerrar sesión en la API de Odoo (si fuese necesario)
@@ -236,15 +238,38 @@ public class contact {
             // Volver a la pantalla de registro/inicio de sesión
             registre.mostrarRegistre();
         });
-        panelLogout.add(btnLogout);
+        panelInferior.add(btnLogout);
+
+        // Subpanel para la izquierda (botón "Historial" y etiqueta de usuario)
+        JPanel panelIzquierda = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Botón "Historial"
+        JButton btnHistorial = new JButton("Historial");
+        btnHistorial.addActionListener(e -> {
+            // Crear una ventana emergente vacía
+            JDialog historialDialog = new JDialog(frame, "Log", true);
+            historialDialog.setSize(400, 300);
+            historialDialog.setLocationRelativeTo(frame);
+            historialDialog.setLayout(new BorderLayout());
+
+            historialDialog.setVisible(true);
+        });
 
         // Agregar el panel de logout al final del frame
-        frame.add(panelLogout, BorderLayout.SOUTH);
+        frame.add(panelInferior, BorderLayout.SOUTH);
 
         // Mostrar tipo de usuario en la parte inferior
         JLabel userTypeLabel = new JLabel(userType);
-        panelLogout.add(userTypeLabel, BorderLayout.WEST);
-        panelLogout.add(btnLogout, BorderLayout.EAST);
+        panelIzquierda.add(userTypeLabel);
+        panelDerecha.add(btnHistorial);
+        panelDerecha.add(btnLogout);
+
+        // Agregar los subpaneles al panel inferior principal
+        panelInferior.add(panelIzquierda, BorderLayout.WEST);
+        panelInferior.add(panelDerecha, BorderLayout.EAST);
+        
+        // Agregar el panel inferior al frame en la posición sur
+        frame.add(panelInferior, BorderLayout.SOUTH);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
