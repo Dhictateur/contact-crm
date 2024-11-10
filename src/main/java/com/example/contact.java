@@ -242,6 +242,14 @@ public class contact {
         });
         panelInferior.add(btnLogout);
 
+        // Botón "Chat"
+        JButton btnChat = new JButton("Chat");
+        btnChat.addActionListener(e -> {
+            chat.mostrarChat(frame);  // 'frame' es el JFrame actual
+        });
+
+        panelInferior.add(btnChat);
+
         // Botón "Historial"
         JButton btnHistorial = new JButton("Historial");
         btnHistorial.addActionListener(e -> {
@@ -269,6 +277,7 @@ public class contact {
         // Mostrar tipo de usuario en la parte inferior
         JLabel userTypeLabel = new JLabel(userType);
         panelIzquierda.add(userTypeLabel);
+        panelDerecha.add(btnChat);
         panelDerecha.add(btnHistorial);
         panelDerecha.add(btnLogout);
 
