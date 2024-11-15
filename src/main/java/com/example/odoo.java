@@ -97,10 +97,9 @@ public class odoo {
                 System.err.println("No se obtuvieron datos de contactos de Odoo.");
                 return null;
             }
-    
             // Crear lista para almacenar contactos convertidos
             List<Map<String, Object>> contactos = new ArrayList<>();
-    
+
             // Convertir y agregar cada elemento a la lista `contactos`
             for (Object item : result) {
                 if (item instanceof Map) {
@@ -123,7 +122,6 @@ public class odoo {
                     System.err.println("Elemento no es un Map: " + item);
                 }
             }
-    
             System.out.println("Contactos obtenidos de Odoo: " + contactos);
             return contactos;
     
@@ -141,6 +139,60 @@ public class odoo {
 
     public static int getUserId() {
         return userId;
-    }
+    }   
+
+    public static List<Map<String, Object>> obtenerTodosLosCanales() {
+        try {
+            // Paso 1: Definir los dominios de búsqueda para obtener todos los canales
+            List<Object> domainCanales = new ArrayList<>(); // No aplicamos ningún filtro, es decir, obtenemos todos los canales.
+        
+            Map<String, Object> fieldsCanales = new HashMap<>();
+            fieldsCanales.put("fields", Arrays.asList("name", "id"));  // Solo queremos los campos "name" y "id"
+        
+            // Paso 2: Llamada a XML-RPC para obtener todos los canales
+            List<Object> paramsCanales = Arrays.asList(
+                db, userId, PASSWORD,
+                "mail.channel", "search_read",
+                domainCanales, fieldsCanales
+            );
+        
+            // Ejecutamos la consulta en el servidor Odoo
+            Object[] resultCanales = (Object[]) clientObject.execute("execute_kw", paramsCanales);
+        
+            // Verificamos si no se han encontrado resultados
+            if (resultCanales == null || resultCanales.length == 0) {
+                System.out.println("No se encontraron canales.");
+                return null;
+            }
+        
+            // Paso 3: Convertir los resultados a una lista de mapas con los campos "name" e "id"
+            List<Map<String, Object>> canales = new ArrayList<>();
+            for (Object item : resultCanales) {
+                if (item instanceof Map) {
+                    Map<String, Object> canal = (Map<String, Object>) item;
+                    String name = (String) canal.get("name");
+                    Integer id = (Integer) canal.get("id");
+        
+                    // Verificamos que ambos valores estén presentes
+                    if (name != null && id != null) {
+                        Map<String, Object> canalData = new HashMap<>();
+                        canalData.put("name", name);
+                        canalData.put("id", id);
+                        canales.add(canalData);
+                    } else {
+                        System.out.println("Canal con datos faltantes, saltando...");
+                    }
+                }
+            }
+        
+            System.out.println("Canales obtenidos: " + canales);
+            return canales;
+        
+        } catch (XmlRpcException e) {
+            System.err.println("Error al obtener los canales: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }           
 
 }

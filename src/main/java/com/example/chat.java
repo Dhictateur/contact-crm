@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.Map;
 
 public class chat {
 
@@ -46,10 +48,27 @@ public class chat {
 
         // Panel lateral izquierdo
         JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS)); // Layout vertical para colocar varios elementos
-        leftPanel.setBackground(Color.LIGHT_GRAY); // Opcional: para darle color al panel
-        leftPanel.setPreferredSize(new Dimension(100, 0)); // Establecer un tamaño fijo de ancho para el panel
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS)); // Layout vertical para organizar los botones
+        leftPanel.setBackground(Color.LIGHT_GRAY); // Opcional: color de fondo
+        leftPanel.setPreferredSize(new Dimension(100, 0)); // Fijar ancho para el panel
 
+        // Obtener la lista de contactos
+        List<Map<String, Object>> canales = odoo.obtenerTodosLosCanales();
+
+        // Crear botones para cada contacto y añadirlos al panel izquierdo
+        for (Map<String, Object> canal : canales) {
+            String canalName = (String) canal.get("name"); // Obtener el nombre del canal
+            JButton canalButton = new JButton(canalName);  // Crear un botón con el nombre del canal
+        
+            canalButton.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centrar el botón en el panel
+            canalButton.addActionListener(e -> {
+                //Accion
+            });
+        
+            leftPanel.add(canalButton);  // Añadir el botón al panel
+        }
+
+        // Añadir el panel izquierdo al diálogo de chat
         chatDialog.add(leftPanel, BorderLayout.WEST);
 
         // Mostrar la ventana de chat

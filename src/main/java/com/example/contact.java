@@ -40,6 +40,10 @@ public class contact {
         return telefono;
     }
 
+    public static List<contact> getContactesOriginals() {
+        return contactesOriginals;
+    }
+
     public static void main(String[] args) throws MalformedURLException, XmlRpcException {
         odoo.inicializarXmlRpc();
         // Mostrar la ventana de registro/inicio de sesión
