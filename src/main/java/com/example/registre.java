@@ -9,14 +9,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class registre {
 
-    private static String nombreUsuario;
+    public static String nombreUsuario;
 
     private static Object uid;
     static JFrame loginFrame;  
@@ -70,14 +73,23 @@ public class registre {
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
                         Connection conexion = null;
                         try {
-                            // Provamos connexion
+                            // Conectamos
                             conexion = odoo.conectar();
+                            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+                            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+                            XmlRpcClient client = new XmlRpcClient();
+                            client.setConfig(config);
+
                             // Verificar el tipo de usuario
-                            contact.userType = verificarTipoUsuario(conexion, nom);
+                            String tipoUsuario = verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, nom);
+                            contact.userType = tipoUsuario;
                         } catch (SQLException m) {
                             System.out.println("Error al conectar a la base de datos: " + m.getMessage());
                             m.printStackTrace();
                             return;  // Termina el programa si no se puede conectar
+                        } catch (MalformedURLException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
                         }
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
                 } else {
@@ -98,25 +110,47 @@ public class registre {
         loginFrame.setVisible(true); // Mostrar la ventana por primera vez
     }
 
-// Metodo para ver si es admin
-    public static String verificarTipoUsuario(Connection conexion, String userName) {
-        String tipoUsuario = "User"; // Por defecto, es un usuario normal
-        String sql = "SELECT u.login AS user_name, g.name AS group_name " +
-                    "FROM res_users u " +
-                    "JOIN res_groups_users_rel gu ON u.id = gu.uid " +
-                    "JOIN res_groups g ON gu.gid = g.id " +
-                    "WHERE g.name = '{\"en_US\": \"Settings\"}' AND u.login = '" + userName + "'";
+    public static String verificarTipoUsuario(XmlRpcClient client, String db, String password, String userNameToCheck) {
+        try {
+            // ID fijo del grupo Settings
+            int settingsGroupId = 4;
 
-        try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                tipoUsuario = "Admin"; // Si se encuentra un resultado, el usuario es admin
+            // Buscar al usuario
+            Object[] userSearchParams = new Object[]{
+                new Object[]{new Object[]{"login", "=", userNameToCheck}}
+            };
+            Object[] userResult = (Object[]) client.execute("execute_kw", new Object[]{
+                db, uid, password, "res.users", "search_read",
+                userSearchParams,
+                new HashMap<String, Object>() {{
+                    put("fields", new String[]{"groups_id"}); // Leer los grupos asociados al usuario
+                }}
+            });
+
+            if (userResult.length > 0) {
+                // Extraer los grupos del usuario
+                HashMap<String, Object> user = (HashMap<String, Object>) userResult[0];
+                Object[] groups = (Object[]) user.get("groups_id");
+
+                System.out.println("Grupos del usuario: " + Arrays.toString(groups)); // Debug
+
+                // Verificar si el usuario pertenece al grupo Settings
+                for (Object groupId : groups) {
+                    int id = Integer.parseInt(groupId.toString());
+                    if (id == settingsGroupId) {
+                        return "Admin"; // Es administrador
+                    }
+                }
+            } else {
+                System.out.println("Usuario no encontrado.");
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(tipoUsuario);
-        return tipoUsuario;
+        return "User"; // Es un usuario normal
     }
+
+    
 
     // Metodo para conexion Odoo > XML-RPC
     public static boolean verificarUsuarioEnOdoo(String nombre, String contrasenya) {

@@ -228,7 +228,19 @@ public class contact {
         JPanel panelInferior = new JPanel(new BorderLayout());
         JPanel panelDerecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JPanel panelIzquierda = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Botón "Modificar usuarios" (nuevo)
+        JButton btnModificarUsuarios = new JButton("Modificar usuarios");
+        btnModificarUsuarios.addActionListener(e -> {
+            try {
+                modificar.mostrarUsuarios(frame);
+            } catch (MalformedURLException | SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
         
+        // Boton Logout
         JButton btnLogout = new JButton("Logout");
         btnLogout.addActionListener(e -> {
             // Cerrar sesión en la API de Odoo (si fuese necesario)
@@ -281,6 +293,7 @@ public class contact {
         // Mostrar tipo de usuario en la parte inferior
         JLabel userTypeLabel = new JLabel(userType);
         panelIzquierda.add(userTypeLabel);
+        panelIzquierda.add(btnModificarUsuarios);
         panelDerecha.add(btnChat);
         panelDerecha.add(btnHistorial);
         panelDerecha.add(btnLogout);

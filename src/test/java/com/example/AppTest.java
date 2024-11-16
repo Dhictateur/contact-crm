@@ -23,44 +23,6 @@ public class AppTest {
         mockConnection = mock(Connection.class);
     }
 
-    @Test
-    public void testVerificarTipoUsuario_Admin() throws SQLException {
-        // Simular el comportamiento del Statement y ResultSet
-        Statement mockStatement = mock(Statement.class);
-        ResultSet mockResultSet = mock(ResultSet.class);
-        
-        when(mockConnection.createStatement()).thenReturn(mockStatement);
-        when(mockStatement.executeQuery(anyString())).thenReturn(mockResultSet);
-        
-        // Simular que se encuentra un resultado en la consulta (el usuario es admin)
-        when(mockResultSet.next()).thenReturn(true);
-        
-        // Llamar al método a probar
-        String tipoUsuario = registre.verificarTipoUsuario(mockConnection, "usuarioAdmin");
-        
-        // Verificar que el tipo de usuario es Admin
-        assertEquals("Admin", tipoUsuario);
-    }
-    
-    @Test
-    public void testVerificarTipoUsuario_User() throws SQLException {
-        // Simular el comportamiento del Statement y ResultSet
-        Statement mockStatement = mock(Statement.class);
-        ResultSet mockResultSet = mock(ResultSet.class);
-        
-        when(mockConnection.createStatement()).thenReturn(mockStatement);
-        when(mockStatement.executeQuery(anyString())).thenReturn(mockResultSet);
-        
-        // Simular que no se encuentra ningún resultado (el usuario es normal)
-        when(mockResultSet.next()).thenReturn(false);
-        
-        // Llamar al método a probar
-        String tipoUsuario = registre.verificarTipoUsuario(mockConnection, "usuarioNormal");
-        
-        // Verificar que el tipo de usuario es User
-        assertEquals("User", tipoUsuario);
-    }
-
     // Test para verificar la funcionalidad de filtrado de contactos
     @Test
     public void testFiltrarContactos() {

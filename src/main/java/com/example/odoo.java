@@ -12,8 +12,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class odoo {
 
@@ -26,7 +28,7 @@ public class odoo {
     // Variables para XML-RPC
     private static XmlRpcClient clientCommon;
     private static XmlRpcClient clientObject;
-    private static String db = "test";
+    public static String db = "test";
     private static int userId;
 
     // Método para establecer la conexión a la base de datos
@@ -144,7 +146,7 @@ public class odoo {
     public static List<Map<String, Object>> obtenerTodosLosCanales() {
         try {
             // Paso 1: Definir los dominios de búsqueda para obtener todos los canales
-            List<Object> domainCanales = new ArrayList<>(); // No aplicamos ningún filtro, es decir, obtenemos todos los canales.
+            List<Object> domainCanales = new ArrayList<>();
         
             Map<String, Object> fieldsCanales = new HashMap<>();
             fieldsCanales.put("fields", Arrays.asList("name", "id"));  // Solo queremos los campos "name" y "id"
@@ -193,6 +195,59 @@ public class odoo {
             e.printStackTrace();
         }
         return null;
-    }           
+    }
 
+    public static List<Map<String, Object>> obtenerUsuariosConLogin() {
+        try {
+            // Parámetros para la llamada `search_read`
+            List<Object> params = Arrays.asList(
+                db, userId, PASSWORD,
+                "res.users", "search_read",
+                Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los usuarios
+                new HashMap<String, Object>() {{
+                    put("fields", Arrays.asList("name", "phone", "login")); // Campos que queremos obtener
+                }}
+            );
+    
+            // Ejecutar la llamada XML-RPC
+            Object[] result = (Object[]) clientObject.execute("execute_kw", params);
+    
+            if (result == null || result.length == 0) {
+                System.err.println("No se obtuvieron datos de usuarios de Odoo.");
+                return new ArrayList<>();
+            }
+    
+            // Crear lista para almacenar los usuarios válidos
+            List<Map<String, Object>> usuarios = new ArrayList<>();
+    
+            for (Object item : result) {
+                if (item instanceof Map) {
+                    Map<String, Object> usuario = (Map<String, Object>) item;
+    
+                    // Extraer campos requeridos
+                    String name = (String) usuario.get("name");
+                    String phone = usuario.get("phone") instanceof String ? (String) usuario.get("phone") : null;
+                    String login = usuario.get("login") instanceof String ? (String) usuario.get("login") : null;
+    
+                    // Solo agregar a la lista si tiene login
+                    if (login != null && !login.isEmpty()) {
+                        // Crear un mapa para almacenar los datos del usuario
+                        Map<String, Object> usuarioMap = new HashMap<>();
+                        usuarioMap.put("name", name);
+                        usuarioMap.put("phone", phone);
+                        usuarioMap.put("login", login);
+                        usuarios.add(usuarioMap);
+                    }
+                }
+            }
+    
+            System.out.println("Usuarios obtenidos de Odoo con login: " + usuarios);
+            return usuarios;
+    
+        } catch (XmlRpcException e) {
+            System.err.println("Error al obtener usuarios: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
 }
