@@ -32,7 +32,7 @@ public class modificar {
 
         if (registre.verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, registre.nombreUsuario) == "Admin") {
             // Crear un JDialog modal
-            JDialog modificarDialog = new JDialog(frame, "Modificar Usuarios", true);
+            JDialog modificarDialog = new JDialog(frame, "Modificació", true);
             modificarDialog.setSize(250, 300);
             modificarDialog.setLocationRelativeTo(frame); // Centrado respecto al frame principal
             modificarDialog.setLayout(new BorderLayout());
@@ -89,7 +89,7 @@ public class modificar {
     public static void mostrarVentanaEdicionUsuario(XmlRpcClient client, JFrame frame, String login) {
         try {
             // Crear un JDialog modal para la edición del usuario
-            JDialog edicionDialog = new JDialog(frame, "Editar Usuario", true);
+            JDialog edicionDialog = new JDialog(frame, "Editar Usuari", true);
             edicionDialog.setSize(300, 250);
             edicionDialog.setLocationRelativeTo(frame); // Centrado respecto al frame principal
             edicionDialog.setLayout(new BorderLayout());
@@ -113,7 +113,7 @@ public class modificar {
             Object[] result = (Object[]) client.execute("execute_kw", params);
 
             if (result == null || result.length == 0) {
-                JOptionPane.showMessageDialog(frame, "Usuario no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Usuari no trobat.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -128,9 +128,9 @@ public class modificar {
             JTextField txtEmail = new JTextField(emailActual);
 
             // Añadir los campos al panel
-            panelEdicion.add(new JLabel("Nombre:"));
+            panelEdicion.add(new JLabel("Nom:"));
             panelEdicion.add(txtNombre);
-            panelEdicion.add(new JLabel("Teléfono:"));
+            panelEdicion.add(new JLabel("Telèfon:"));
             panelEdicion.add(txtTelefono);
             panelEdicion.add(new JLabel("Email:"));
             panelEdicion.add(txtEmail);
@@ -155,10 +155,10 @@ public class modificar {
 
                     boolean success = (boolean) client.execute("execute_kw", writeParams);
                     if (success) {
-                        JOptionPane.showMessageDialog(edicionDialog, "Datos actualizados correctamente.");
+                        JOptionPane.showMessageDialog(edicionDialog, "Dades actualitzades correctament.");
                         edicionDialog.dispose(); // Cerrar la ventana
                     } else {
-                        JOptionPane.showMessageDialog(edicionDialog, "Error al actualizar los datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(edicionDialog, "Error a l'actualizar les dades.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -167,7 +167,7 @@ public class modificar {
             });
 
             // Botón para cancelar
-            JButton btnCancelar = new JButton("Cancelar");
+            JButton btnCancelar = new JButton("Cancel·lar");
             btnCancelar.addActionListener(e -> edicionDialog.dispose());
 
             // Panel para los botones
@@ -184,7 +184,7 @@ public class modificar {
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(frame, "Error al obtener los datos del usuario: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Error en obtenir les dades de l'usuari: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -205,7 +205,7 @@ public class modificar {
             Object[] result = (Object[]) client.execute("execute_kw", params);
     
             if (result == null || result.length == 0) {
-                JOptionPane.showMessageDialog(frame, "Usuario no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Usuari no trobat.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
     
@@ -215,7 +215,7 @@ public class modificar {
             String emailActual = usuario.get("login") instanceof String ? (String) usuario.get("login") : "";
     
             // Crear un JDialog modal para la edición del usuario
-            JDialog edicionDialog = new JDialog(frame, "Editar Usuario: " + nombreActual, true);
+            JDialog edicionDialog = new JDialog(frame, "Editar Usuari: " + nombreActual, true);
             edicionDialog.setSize(300, 250);
             edicionDialog.setLocationRelativeTo(frame); // Centrado respecto al frame principal
             edicionDialog.setLayout(new BorderLayout());
@@ -230,9 +230,9 @@ public class modificar {
             JTextField txtLogin = new JTextField(emailActual);
     
             // Añadir los campos al panel
-            panelEdicion.add(new JLabel("Nombre:"));
+            panelEdicion.add(new JLabel("Nom:"));
             panelEdicion.add(txtNombre);
-            panelEdicion.add(new JLabel("Teléfono:"));
+            panelEdicion.add(new JLabel("Telèfon:"));
             panelEdicion.add(txtTelefono);
             panelEdicion.add(new JLabel("Email:"));
             panelEdicion.add(txtLogin);

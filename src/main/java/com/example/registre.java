@@ -37,13 +37,13 @@ public class registre {
         }
 
         // Crear la ventana solo si no existe
-        loginFrame = new JFrame("Iniciar Sesión");
+        loginFrame = new JFrame("Inici de Sessió");
         loginFrame.setLayout(new GridLayout(3, 2));
 
         // Etiquetas y campos de texto
-        JLabel nomLabel = new JLabel("Nombre:");
+        JLabel nomLabel = new JLabel("Nom:");
         JTextField nomField = new JTextField();
-        JLabel contrasenyaLabel = new JLabel("Contraseña:");
+        JLabel contrasenyaLabel = new JLabel("Contrasenya:");
         JPasswordField contrasenyaField = new JPasswordField();
 
         loginFrame.add(nomLabel);
@@ -52,7 +52,7 @@ public class registre {
         loginFrame.add(contrasenyaField);
 
         // Boton inicio
-        JButton btIniciarSessio = new JButton("Iniciar Sesión");
+        JButton btIniciarSessio = new JButton("Inici");
         btIniciarSessio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

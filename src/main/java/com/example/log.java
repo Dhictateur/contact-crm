@@ -12,21 +12,21 @@ public class log {
     // Método para registrar un inicio de sesión
     public static void registrarInicioSesion(String usuario) {
         String timestamp = LocalDateTime.now().format(formatter);
-        String mensaje = "Inicio de sesión: " + usuario + " | " + timestamp;
+        String mensaje = "Inici de sessió: " + usuario + " | " + timestamp;
         historial.add(mensaje);
     }
 
     // Método para registrar un cierre de sesión
     public static void registrarCierreSesion(String usuario) {
         String timestamp = LocalDateTime.now().format(formatter);
-        String mensaje = "Cierre de sesión: " + usuario + " | " + timestamp;
+        String mensaje = "Tancament de sessió: " + usuario + " | " + timestamp;
         historial.add(mensaje);
     }
 
     // Método para registrar una llamada
     public static void registrarLlamada(String contacto) {
         String timestamp = LocalDateTime.now().format(formatter);
-        String mensaje = "Llamada a " + contacto + " | " + timestamp;
+        String mensaje = "Trucada a " + contacto + " | " + timestamp;
         historial.add(mensaje);
     }
 

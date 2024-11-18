@@ -93,7 +93,7 @@ public class contact {
 
                 JButton trucarButton = new JButton("Trucar");
                 trucarButton.addActionListener(e -> {
-                    JOptionPane.showMessageDialog(frame, "Tracant a " + contacte.getNom());
+                    JOptionPane.showMessageDialog(frame, "Trucant a " + contacte.getNom());
                     log.registrarLlamada(contacte.getNom());
                 });
                 contactePanel.add(trucarButton);
@@ -230,7 +230,7 @@ public class contact {
         JPanel panelIzquierda = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // Botón "Modificar usuarios" (nuevo)
-        JButton btnModificarUsuarios = new JButton("Modificar usuarios");
+        JButton btnModificarUsuarios = new JButton("Modificar usuaris");
         btnModificarUsuarios.addActionListener(e -> {
             try {
                 modificar.mostrarUsuarios(frame);
