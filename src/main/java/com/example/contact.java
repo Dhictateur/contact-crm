@@ -184,6 +184,12 @@ public class contact {
             dialog.setVisible(true);
         });
 
+        //Boton Calendario
+        JButton btnCalendario = new JButton("Calendari");
+        btnCalendario.addActionListener(e -> {
+            calendari.mostrarCalendari(frame);
+        });
+
         // Botón "Grupos"
         JButton btnGrupos = new JButton("Grups");
         btnGrupos.addActionListener(e -> {
@@ -217,6 +223,7 @@ public class contact {
         panellSuperior.add(buscador);
         panellSuperior.add(btAfegirGrup);
         panellSuperior.add(btnGrupos);
+        panellSuperior.add(btnCalendario);
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -303,7 +310,7 @@ public class contact {
         panelInferior.add(panelDerecha, BorderLayout.EAST);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
+        frame.setSize(650, 450);
         frame.setVisible(true);
 
         // Actualizar la lista inicialmente
