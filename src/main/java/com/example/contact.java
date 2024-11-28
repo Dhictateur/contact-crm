@@ -28,7 +28,7 @@ public class contact {
     private static List<contact> contactesFiltrats = new ArrayList<>();
 
     public contact(String nombre, String telefono) {
-        this.nombre = nombre;
+        this.nombre = nombre; 
         this.telefono = telefono;
     }
 

@@ -31,6 +31,14 @@ public class odoo {
     private static XmlRpcClient clientObject;
     public static String db = "test";
     private static int userId;
+    
+    public static void setClientCommon(XmlRpcClient client) {
+        clientCommon = client;
+    }
+    
+    public static void setClientObject(XmlRpcClient client) {
+        clientObject = client;
+    }
 
     // Método para establecer la conexión a la base de datos
     public static Connection conectar() throws SQLException {
@@ -88,7 +96,7 @@ public class odoo {
                 "res.partner", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtro, obtendremos todos los contactos
                 new HashMap<String, Object>() {{
-                    put("fields", Arrays.asList("name", "phone")); // Campos que queremos obtener
+                    put("fields", Arrays.asList("name", "phone", "owner_id")); // Campos que queremos obtener
                 }}
             );
     
@@ -110,16 +118,15 @@ public class odoo {
     
                     // Comprobar si el campo 'phone' no es nulo y no es un valor booleano
                     Object phoneValue = contacto.get("phone");
-                    if (phoneValue instanceof String && phoneValue != null) {
+                    Object ownerValue = contacto.get("owner_id");
+                    
+                    if (phoneValue instanceof String && !(ownerValue instanceof Boolean && !(Boolean) ownerValue)) {
                         // Crear un nuevo mapa para almacenar el contacto
                         Map<String, Object> contactoMap = new HashMap<>();
                         contactoMap.put("name", contacto.get("name"));
                         contactoMap.put("phone", phoneValue);
-                        
-                        // Agregar solo si el teléfono no es nulo
-                        if (phoneValue != null) {
-                            contactos.add(contactoMap);
-                        }
+                        contactoMap.put("owner_id", ownerValue);
+                        contactos.add(contactoMap);
                     }
                 } else {
                     System.err.println("Elemento no es un Map: " + item);
@@ -143,60 +150,6 @@ public class odoo {
     public static int getUserId() {
         return userId;
     }   
-
-    public static List<Map<String, Object>> obtenerTodosLosCanales() {
-        try {
-            // Paso 1: Definir los dominios de búsqueda para obtener todos los canales
-            List<Object> domainCanales = new ArrayList<>();
-        
-            Map<String, Object> fieldsCanales = new HashMap<>();
-            fieldsCanales.put("fields", Arrays.asList("name", "id"));  // Solo queremos los campos "name" y "id"
-        
-            // Paso 2: Llamada a XML-RPC para obtener todos los canales
-            List<Object> paramsCanales = Arrays.asList(
-                db, userId, PASSWORD,
-                "mail.channel", "search_read",
-                domainCanales, fieldsCanales
-            );
-        
-            // Ejecutamos la consulta en el servidor Odoo
-            Object[] resultCanales = (Object[]) clientObject.execute("execute_kw", paramsCanales);
-        
-            // Verificamos si no se han encontrado resultados
-            if (resultCanales == null || resultCanales.length == 0) {
-                System.out.println("No se encontraron canales.");
-                return null;
-            }
-        
-            // Paso 3: Convertir los resultados a una lista de mapas con los campos "name" e "id"
-            List<Map<String, Object>> canales = new ArrayList<>();
-            for (Object item : resultCanales) {
-                if (item instanceof Map) {
-                    Map<String, Object> canal = (Map<String, Object>) item;
-                    String name = (String) canal.get("name");
-                    Integer id = (Integer) canal.get("id");
-        
-                    // Verificamos que ambos valores estén presentes
-                    if (name != null && id != null) {
-                        Map<String, Object> canalData = new HashMap<>();
-                        canalData.put("name", name);
-                        canalData.put("id", id);
-                        canales.add(canalData);
-                    } else {
-                        System.out.println("Canal con datos faltantes, saltando...");
-                    }
-                }
-            }
-        
-            System.out.println("Canales obtenidos: " + canales);
-            return canales;
-        
-        } catch (XmlRpcException e) {
-            System.err.println("Error al obtener los canales: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public static List<Map<String, Object>> obtenerUsuariosConLogin() {
         try {
