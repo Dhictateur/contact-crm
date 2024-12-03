@@ -52,25 +52,49 @@ public class contact {
     }
 
     public static void mostrarAgenda() {
+        
         try {
-            // Obtener contactos desde Odoo
-            List<Map<String, Object>> contactosOdoo = odoo.obtenerContactos();
+            // Paso 1: Obtener el ID del usuario actual usando `registre.nombreUsuario`
+            String usuarioActual = registre.nombreUsuario;
+            System.out.println(usuarioActual);
+            Integer usuarioId = null;
             
-            // Convertir la lista de Map a una lista de objetos `contact`
+            // Buscar el usuario actual en la lista de usuarios
+            List<Map<String, Object>> usuarios = odoo.obtenerUsuariosConLogin();
+            for (Map<String, Object> usuario : usuarios) {
+                String login = (String) usuario.get("login");
+                if (usuarioActual.equals(login)) {
+                    usuarioId = (Integer) usuario.get("id"); // Asegúrate de que estás obteniendo el campo `id` correctamente
+                    break;
+                }
+            }
+    
+            if (usuarioId == null) {
+                JOptionPane.showMessageDialog(null, "No se encontró el ID del usuario actual.");
+                return;
+            }
+    
+            // Paso 2: Obtener los contactos desde Odoo
+            List<Map<String, Object>> contactosOdoo = odoo.obtenerContactos();
+    
+            // Paso 3: Filtrar los contactos según el `owner_id`
             contactesOriginals = new ArrayList<>();
             for (Map<String, Object> datos : contactosOdoo) {
-                String name = (String) datos.get("name");
-                String phone = (String) datos.get("phone");
-                contact contacto = new contact(name, phone);
-                contactesOriginals.add(contacto);
+                Integer ownerId = (Integer) datos.get("owner_id");
+                if (ownerId != null && ownerId.equals(usuarioId)) {
+                    String name = (String) datos.get("name");
+                    String phone = (String) datos.get("phone");
+                    contact contacto = new contact(name, phone);
+                    contactesOriginals.add(contacto);
+                }
             }
-            
-            // Clonar la lista original a la lista filtrada
+    
+            // Paso 4: Clonar la lista original a la lista filtrada
             contactesFiltrats = new ArrayList<>(contactesOriginals);
+    
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error al obtener contactos de Odoo");
-            return;
         }
 
         List<contact> contactesFiltrats = new ArrayList<>(contactesOriginals);

@@ -120,14 +120,25 @@ public class odoo {
                     Object phoneValue = contacto.get("phone");
                     Object ownerValue = contacto.get("owner_id");
                     
-                    if (phoneValue instanceof String && !(ownerValue instanceof Boolean && !(Boolean) ownerValue)) {
-                        // Crear un nuevo mapa para almacenar el contacto
-                        Map<String, Object> contactoMap = new HashMap<>();
-                        contactoMap.put("name", contacto.get("name"));
-                        contactoMap.put("phone", phoneValue);
-                        contactoMap.put("owner_id", ownerValue);
-                        contactos.add(contactoMap);
+                    if (phoneValue instanceof String && ownerValue != null) {
+                        Integer ownerId = null; // Inicializar el ID del owner
+                        if (ownerValue instanceof Object[]) {
+                            Object[] ownerArray = (Object[]) ownerValue;
+                            if (ownerArray.length > 0 && ownerArray[0] instanceof Integer) {
+                                ownerId = (Integer) ownerArray[0]; // Extraer el ID (primer elemento del arreglo)
+                            }
+                        }
+
+                        if (ownerId != null) {
+                            // Crear un nuevo mapa para almacenar el contacto
+                            Map<String, Object> contactoMap = new HashMap<>();
+                            contactoMap.put("name", contacto.get("name"));
+                            contactoMap.put("phone", phoneValue);
+                            contactoMap.put("owner_id", ownerId);
+                            contactos.add(contactoMap);
+                        }
                     }
+                    
                 } else {
                     System.err.println("Elemento no es un Map: " + item);
                 }
@@ -159,7 +170,7 @@ public class odoo {
                 "res.users", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los usuarios
                 new HashMap<String, Object>() {{
-                    put("fields", Arrays.asList("name", "phone", "login")); // Campos que queremos obtener
+                    put("fields", Arrays.asList("name", "phone", "login", "id")); // Campos que queremos obtener
                 }}
             );
     
@@ -182,6 +193,7 @@ public class odoo {
                     String name = (String) usuario.get("name");
                     String phone = usuario.get("phone") instanceof String ? (String) usuario.get("phone") : null;
                     String login = usuario.get("login") instanceof String ? (String) usuario.get("login") : null;
+                    Integer id = usuario.get("id") instanceof Integer ? (Integer) usuario.get("id") : null;
     
                     // Solo agregar a la lista si tiene login
                     if (login != null && !login.isEmpty()) {
@@ -190,6 +202,7 @@ public class odoo {
                         usuarioMap.put("name", name);
                         usuarioMap.put("phone", phone);
                         usuarioMap.put("login", login);
+                        usuarioMap.put("id", id);
                         usuarios.add(usuarioMap);
                     }
                 }
