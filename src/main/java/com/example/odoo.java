@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+// Clase Odoo local funcional
 public class odoo {
 
     // Parámetros de conexión
