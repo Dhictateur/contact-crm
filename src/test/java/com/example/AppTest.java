@@ -155,7 +155,6 @@ public class AppTest {
     @Test
     public void testVerificarTipoUsuario_Admin() throws Exception {
         Connection conexion = null;
-        conexion = odoo.conectar();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();
@@ -171,7 +170,6 @@ public class AppTest {
     @Test
     public void testVerificarTipoUsuario_User() throws Exception {
         Connection conexion = null;
-        conexion = odoo.conectar();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();
@@ -187,7 +185,6 @@ public class AppTest {
     @Test
     public void testUsuarioNoEncontrado() throws Exception {
         Connection conexion = null;
-        conexion = odoo.conectar();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();

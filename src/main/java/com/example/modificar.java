@@ -24,9 +24,8 @@ public class modificar {
     public static void mostrarUsuarios(JFrame frame) throws SQLException, MalformedURLException {
 
         Connection conexion = null;
-        conexion = odoo.conectar();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-        config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();
         client.setConfig(config);
 

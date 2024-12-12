@@ -22,15 +22,15 @@ import java.util.Vector;
 public class odoo {
 
     // Parámetros de conexión
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/test";
-    public static final String USER = "1234@gmail.com";
-    public static final String PASSWORD = "1234";
-    public static final String USERDB = "odoo";
+    static final String ODOO_URL = "https://devsforcrm.mywire.org/";
+    public static final String USER = "admin";
+    public static final String PASSWORD = "admin";
+    public static final String USERDB = "admin";
 
     // Variables para XML-RPC
     private static XmlRpcClient clientCommon;
     private static XmlRpcClient clientObject;
-    public static String db = "test";
+    public static String db = "prova3";
     private static int userId;
     
     public static void setClientCommon(XmlRpcClient client) {
@@ -42,18 +42,18 @@ public class odoo {
     }
 
     // Método para establecer la conexión a la base de datos
-    public static Connection conectar() throws SQLException {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            System.out.println("No se encontró el controlador de PostgreSQL");
-            e.printStackTrace();
-        }
-
-        Connection conexion = DriverManager.getConnection(DB_URL, USERDB, PASSWORD);
-        System.out.println("Conexión establecida correctamente con la base de datos de Odoo.");
-        return conexion;
-    }
+    //public static Connection conectar() throws SQLException {
+    //    try {
+    //       Class.forName("org.postgresql.Driver");
+    //    } catch (ClassNotFoundException e) {
+    //        System.out.println("No se encontró el controlador de PostgreSQL");
+    //        e.printStackTrace();
+    //    }
+    //
+    //    Connection conexion = DriverManager.getConnection(ODOO_URL, USERDB, PASSWORD);
+    //    System.out.println("Conexión establecida correctamente con la base de datos de Odoo.");
+    //    return conexion;
+    //}
 
     // Método para cerrar la conexión
     public static void cerrarConexion(Connection conexion) {
@@ -70,7 +70,7 @@ public class odoo {
     // Método para inicializar el cliente XML-RPC y autenticar al usuario
     public static void inicializarXmlRpc() throws MalformedURLException, XmlRpcException {
         XmlRpcClientConfigImpl configCommon = new XmlRpcClientConfigImpl();
-        configCommon.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));
+        configCommon.setServerURL(new URL(ODOO_URL + "xmlrpc/2/common"));
         clientCommon = new XmlRpcClient();
         clientCommon.setConfig(configCommon);
 
@@ -82,7 +82,7 @@ public class odoo {
         }
         
         XmlRpcClientConfigImpl configObject = new XmlRpcClientConfigImpl();
-        configObject.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+        configObject.setServerURL(new URL(ODOO_URL + "xmlrpc/2/object"));
         clientObject = new XmlRpcClient();
         clientObject.setConfig(configObject);
 

@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -73,23 +75,22 @@ public class registre {
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
                         Connection conexion = null;
                         try {
-                            // Conectamos
-                            conexion = odoo.conectar();
                             XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-                            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+                            config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
                             XmlRpcClient client = new XmlRpcClient();
                             client.setConfig(config);
 
                             // Verificar el tipo de usuario
                             String tipoUsuario = verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, nom);
                             contact.userType = tipoUsuario;
-                        } catch (SQLException m) {
-                            System.out.println("Error al conectar a la base de datos: " + m.getMessage());
+                        } catch (MalformedURLException m) {
+                            System.out.println("URL malformada: " + m.getMessage());
                             m.printStackTrace();
-                            return;  // Termina el programa si no se puede conectar
-                        } catch (MalformedURLException e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
+                            return; // Termina el programa si la URL es inválida
+                        } catch (Exception y) {
+                            System.out.println("Error inesperado: " + y.getMessage());
+                            y.printStackTrace();
+                            return; // Manejo general para otras excepciones no anticipadas
                         }
                     contact.mostrarAgenda(); // Llamar a la interfaz de contacto
                 } else {
@@ -157,13 +158,13 @@ public class registre {
         try {
             // Configuración del cliente XML-RPC
             XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-            config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/common"));
+            config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/common"));
             XmlRpcClient client = new XmlRpcClient(); 
             client.setConfig(config);
     
             // Llamada a la función 'authenticate' de Odoo
             Object[] params = new Object[]{
-                "test",         // Nombre de la base de datos de Odoo
+                "prova3",         // Nombre de la base de datos de Odoo
                 nombre,         // Nombre de usuario
                 contrasenya,    // Contraseña
                 new HashMap<>() // Sin contexto adicional
