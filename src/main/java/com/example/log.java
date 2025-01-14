@@ -30,6 +30,12 @@ public class log {
         historial.add(mensaje);
     }
 
+    public static void registrarMensajeEnviado(String remitente, String destinatario) {
+        String timestamp = LocalDateTime.now().format(formatter);
+        String mensaje = remitente + " ha enviado un mensaje a " + destinatario + " | " + timestamp;
+        historial.add(mensaje);
+    }
+
     // Método para obtener el historial completo
     public static List<String> obtenerHistorial() {
         return new ArrayList<>(historial);

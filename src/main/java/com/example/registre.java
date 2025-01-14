@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
@@ -22,6 +23,7 @@ import java.net.URL;
 public class registre {
 
     public static String nombreUsuario;
+    public static int id_odoo;
 
     private static Object uid;
     static JFrame loginFrame;  
@@ -71,6 +73,7 @@ public class registre {
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(loginFrame, "Iniciando sesión como: " + nom);
                     nombreUsuario = nom;
+                    id_odoo = odoo.obtenerUserIdPorLogin(nombreUsuario);
                     log.registrarInicioSesion(nom);
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
                         Connection conexion = null;
@@ -164,7 +167,7 @@ public class registre {
     
             // Llamada a la función 'authenticate' de Odoo
             Object[] params = new Object[]{
-                "prova3",         // Nombre de la base de datos de Odoo
+                "test",         // Nombre de la base de datos de Odoo
                 nombre,         // Nombre de usuario
                 contrasenya,    // Contraseña
                 new HashMap<>() // Sin contexto adicional

@@ -211,7 +211,8 @@ public class contact {
         //Boton Calendario
         JButton btnCalendario = new JButton("Calendari");
         btnCalendario.addActionListener(e -> {
-            calendari.mostrarCalendari(frame);
+            calendari.mostrarCalendari(frame, registre.nombreUsuario);
+            System.out.println(registre.nombreUsuario);
         });
 
         // Botón "Grupos"

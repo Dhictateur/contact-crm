@@ -66,6 +66,7 @@ public class chat {
             String asunto = "Correo de: " + remitenteNombre; 
             try {
                 enviarCorreo(mailUser, asunto, mensaje);
+                log.registrarMensajeEnviado(remitenteNombre, mailUser);
                 JOptionPane.showMessageDialog(chatFrame, "Correo enviado a: " + mailUser, "Envío exitoso", JOptionPane.INFORMATION_MESSAGE);
                 areaEscritura.setText(""); // Limpiar el área de texto
             } catch (Exception ex) {

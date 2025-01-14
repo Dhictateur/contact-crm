@@ -66,8 +66,8 @@ public class AppTest {
     @Test
     public void testVerificarLogin() {
         // Simular el comportamiento de verificarUsuarioEnOdoo
-        String nombre = "1234@gmail.com";
-        String contrasenya = "1234";
+        String nombre = "admin";
+        String contrasenya = "admin";
 
         // Aquí simula que el usuario se autentica correctamente
         boolean autenticado = registre.verificarUsuarioEnOdoo(nombre, contrasenya);
@@ -98,22 +98,24 @@ public class AppTest {
         assertTrue(registre.loginFrame.isVisible());
     }
 
-    // Test para inicializar la lista de contactos
     @Test
     public void testInicializarListaContactos() throws Exception {
-        // Simular respuesta de Odoo
+        // Simular respuesta de Odoo con contactos válidos y un campo owner_id
         List<Map<String, Object>> contactosSimulados = new ArrayList<>();
         Map<String, Object> contacto1 = new HashMap<>();
         contacto1.put("name", "Juan Pérez");
         contacto1.put("phone", "123456789");
+        contacto1.put("owner_id", new Object[]{1, "Administrador"});
 
         Map<String, Object> contacto2 = new HashMap<>();
         contacto2.put("name", "Ana López");
         contacto2.put("phone", "987654321");
+        contacto2.put("owner_id", new Object[]{2, "Usuario"});
 
         contactosSimulados.add(contacto1);
         contactosSimulados.add(contacto2);
 
+        // Simular el cliente Odoo
         when(clientObjectMock.execute(eq("execute_kw"), anyList())).thenReturn(contactosSimulados.toArray());
 
         // Llamar al método
@@ -122,7 +124,16 @@ public class AppTest {
         // Verificar los resultados
         assertNotNull(contactos);
         assertEquals(2, contactos.size());
+
+        // Verificar primer contacto
         assertEquals("Juan Pérez", contactos.get(0).get("name"));
+        assertEquals("123456789", contactos.get(0).get("phone"));
+        assertEquals(1, contactos.get(0).get("owner_id"));
+
+        // Verificar segundo contacto
+        assertEquals("Ana López", contactos.get(1).get("name"));
+        assertEquals("987654321", contactos.get(1).get("phone"));
+        assertEquals(2, contactos.get(1).get("owner_id"));
     }
 
     @Test
@@ -156,12 +167,12 @@ public class AppTest {
     public void testVerificarTipoUsuario_Admin() throws Exception {
         Connection conexion = null;
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-        config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();
         client.setConfig(config);
 
         // Llamar al método verificarTipoUsuario
-        String result = registre.verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, "1234@gmail.com");
+        String result = registre.verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, "admin");
 
         // Verificar que el tipo de usuario sea "Admin"
         assertEquals("Admin", result);
@@ -171,7 +182,7 @@ public class AppTest {
     public void testVerificarTipoUsuario_User() throws Exception {
         Connection conexion = null;
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-        config.setServerURL(new URL("http://localhost:8069/xmlrpc/2/object"));
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
         XmlRpcClient client = new XmlRpcClient();
         client.setConfig(config);
 

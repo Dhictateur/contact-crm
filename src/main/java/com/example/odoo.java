@@ -9,8 +9,10 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,15 +24,15 @@ import java.util.Vector;
 public class odoo {
 
     // Parámetros de conexión
-    static final String ODOO_URL = "https://devsforcrm.mywire.org/";
-    public static final String USER = "admin";
-    public static final String PASSWORD = "admin";
-    public static final String USERDB = "admin";
+    static final String ODOO_URL = "http://localhost:8069/";
+    public static final String USER = "1234@gmail.com";
+    public static final String PASSWORD = "1234";
+    public static final String USERDB = "1234";
 
     // Variables para XML-RPC
     private static XmlRpcClient clientCommon;
     private static XmlRpcClient clientObject;
-    public static String db = "prova3";
+    public static String db = "test";
     private static int userId;
     
     public static void setClientCommon(XmlRpcClient client) {
@@ -40,20 +42,6 @@ public class odoo {
     public static void setClientObject(XmlRpcClient client) {
         clientObject = client;
     }
-
-    // Método para establecer la conexión a la base de datos
-    //public static Connection conectar() throws SQLException {
-    //    try {
-    //       Class.forName("org.postgresql.Driver");
-    //    } catch (ClassNotFoundException e) {
-    //        System.out.println("No se encontró el controlador de PostgreSQL");
-    //        e.printStackTrace();
-    //    }
-    //
-    //    Connection conexion = DriverManager.getConnection(ODOO_URL, USERDB, PASSWORD);
-    //    System.out.println("Conexión establecida correctamente con la base de datos de Odoo.");
-    //    return conexion;
-    //}
 
     // Método para cerrar la conexión
     public static void cerrarConexion(Connection conexion) {
@@ -217,5 +205,130 @@ public class odoo {
             e.printStackTrace();
         }
         return new ArrayList<>();
+    }   
+
+    public static List<Map<String, Object>> obtenerEventos() {
+        try {
+            // Parámetros para la llamada `search_read` al modelo `calendar.event`
+            List<Object> params = Arrays.asList(
+                db, userId, PASSWORD,
+                "calendar.event", "search_read",
+                Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los eventos
+                new HashMap<String, Object>() {{
+                    put("fields", Arrays.asList("name", "start", "stop", "user_id")); // Campos requeridos
+                }}
+            );
+
+            // Ejecutar la llamada XML-RPC
+            Object[] result = (Object[]) clientObject.execute("execute_kw", params);
+
+            if (result == null || result.length == 0) {
+                System.err.println("No se obtuvieron datos de eventos de Odoo.");
+                return new ArrayList<>();
+            }
+
+            // Crear lista para almacenar los eventos procesados
+            List<Map<String, Object>> eventos = new ArrayList<>();
+
+            for (Object item : result) {
+                if (item instanceof Map) {
+                    Map<String, Object> evento = (Map<String, Object>) item;
+
+                    // Extraer y procesar los datos necesarios
+                    String name = (String) evento.get("name");
+                    String start = (String) evento.get("start");
+                    String stop = (String) evento.get("stop");
+                    Object userIdObj = evento.get("user_id");
+
+                    // Validar y extraer el `user_id`
+                    Integer userId = null;
+                    if (userIdObj instanceof Object[] && ((Object[]) userIdObj).length > 0) {
+                        Object[] userArray = (Object[]) userIdObj;
+                        if (userArray[0] instanceof Integer) {
+                            userId = (Integer) userArray[0];
+                        }
+                    }
+
+                    // Agregar evento a la lista si los datos son válidos
+                    if (name != null && start != null && stop != null && userId != null) {
+                        Map<String, Object> eventoMap = new HashMap<>();
+                        eventoMap.put("name", name);
+                        eventoMap.put("start", start);
+                        eventoMap.put("stop", stop);
+                        eventoMap.put("user_id", userId);
+                        eventos.add(eventoMap);
+                    }
+                }
+            }
+
+            System.out.println("Eventos obtenidos de Odoo: " + eventos);
+            return eventos;
+
+        } catch (XmlRpcException e) {
+            System.err.println("Error al obtener eventos: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
     }
+
+    public static int obtenerUserIdPorLogin(String login) {
+        // Obtener la lista de usuarios con login desde Odoo
+        List<Map<String, Object>> usuarios = obtenerUsuariosConLogin();
+    
+        // Recorrer la lista de usuarios y buscar por login
+        for (Map<String, Object> usuario : usuarios) {
+            String usuarioLogin = (String) usuario.get("login");
+            
+            // Si encontramos el login, devolver el id del usuario
+            if (usuarioLogin != null && usuarioLogin.equals(login)) {
+                Integer userId = (Integer) usuario.get("id");
+                if (userId != null) {
+                    return userId;  // Retornar el id del usuario encontrado
+                }
+            }
+        }
+    
+        // Si no se encontró el usuario, retornar un valor predeterminado o -1 para indicar no encontrado
+        System.err.println("Usuario con login " + login + " no encontrado.");
+        return -1;
+    }
+
+    public static void crearEvento(String nombreEvento, Date fechaInicio, Date fechaFin, int userId) {
+        try {
+            // Convertir las fechas a formato Odoo (usualmente es el formato datetime de Odoo)
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String startDate = formatter.format(fechaInicio); // Fecha de inicio en el formato de Odoo
+            String endDate = formatter.format(fechaFin); // Fecha de fin en el formato de Odoo
+
+            // Crear un mapa con los datos del nuevo evento
+            Map<String, Object> eventoData = new HashMap<>();
+            eventoData.put("name", nombreEvento);
+            eventoData.put("start", startDate);
+            eventoData.put("stop", endDate);
+            eventoData.put("user_id", userId); // Se asume que user_id es un campo de relación con `res.users`
+            System.out.println(eventoData);
+
+            // Parámetros para la llamada XML-RPC a `create` en el modelo `calendar.event`
+            List<Object> params = Arrays.asList(
+                db, userId, PASSWORD,  // Conexión a Odoo
+                "calendar.event", "create", // Llamada a la función create en el modelo calendar.event
+                new Object[]{eventoData}  // Los datos del nuevo evento
+            );
+
+            // Ejecutar la llamada XML-RPC para crear el evento
+            Object result = clientObject.execute("execute_kw", params);
+
+            if (result != null) {
+                System.out.println("Evento creado con éxito. ID: " + result);
+            } else {
+                System.err.println("No se pudo crear el evento.");
+            }
+
+        } catch (XmlRpcException e) {
+            System.err.println("Error al crear el evento: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 }
