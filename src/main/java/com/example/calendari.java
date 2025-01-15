@@ -43,7 +43,7 @@ public class calendari {
         JFrame calendarioFrame = new JFrame("Calendario");
 
         // Configurar las propiedades de la ventana
-        calendarioFrame.setSize(400, 400); // Establece el tamaño de la ventana (aumento de altura)
+        calendarioFrame.setSize(400, 500); // Establece el tamaño de la ventana (aumento de altura)
         calendarioFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cierra solo esta ventana
 
         // Crear un panel con un layout que permita expandir el JCalendar
