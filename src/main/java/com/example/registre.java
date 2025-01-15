@@ -50,6 +50,11 @@ public class registre {
         JLabel contrasenyaLabel = new JLabel("Contrasenya:");
         JPasswordField contrasenyaField = new JPasswordField();
 
+        String nombreGuardado = configManager.leerNombreUsuario();
+        if (!nombreGuardado.isEmpty()) {
+            nomField.setText(nombreGuardado);
+        }
+
         loginFrame.add(nomLabel);
         loginFrame.add(nomField);
         loginFrame.add(contrasenyaLabel);
@@ -73,6 +78,7 @@ public class registre {
                 if (verificarUsuarioEnOdoo(nom, contrasenya)) {
                     JOptionPane.showMessageDialog(loginFrame, "Iniciando sesión como: " + nom);
                     nombreUsuario = nom;
+                    configManager.guardarNombreUsuario(nombreUsuario);
                     id_odoo = odoo.obtenerUserIdPorLogin(nombreUsuario);
                     log.registrarInicioSesion(nom);
                     loginFrame.setVisible(false); // Ocultar la ventana de login en lugar de eliminarla
@@ -167,7 +173,7 @@ public class registre {
     
             // Llamada a la función 'authenticate' de Odoo
             Object[] params = new Object[]{
-                "test",         // Nombre de la base de datos de Odoo
+                "prova3",         // Nombre de la base de datos de Odoo
                 nombre,         // Nombre de usuario
                 contrasenya,    // Contraseña
                 new HashMap<>() // Sin contexto adicional

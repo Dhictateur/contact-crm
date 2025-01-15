@@ -24,15 +24,15 @@ import java.util.Vector;
 public class odoo {
 
     // Parámetros de conexión
-    static final String ODOO_URL = "http://localhost:8069/";
-    public static final String USER = "1234@gmail.com";
-    public static final String PASSWORD = "1234";
-    public static final String USERDB = "1234";
+    static final String ODOO_URL = "https://devsforcrm.mywire.org/";
+    public static final String USER = "admin";
+    public static final String PASSWORD = "admin";
+    public static final String USERDB = "admin";
 
     // Variables para XML-RPC
     private static XmlRpcClient clientCommon;
     private static XmlRpcClient clientObject;
-    public static String db = "test";
+    public static String db = "prova3";
     private static int userId;
     
     public static void setClientCommon(XmlRpcClient client) {
@@ -207,7 +207,7 @@ public class odoo {
         return new ArrayList<>();
     }   
 
-    public static List<Map<String, Object>> obtenerEventos() {
+    public static List<Map<String, Object>> obtenerEventosDeUser() {
         try {
             // Parámetros para la llamada `search_read` al modelo `calendar.event`
             List<Object> params = Arrays.asList(
@@ -215,7 +215,7 @@ public class odoo {
                 "calendar.event", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los eventos
                 new HashMap<String, Object>() {{
-                    put("fields", Arrays.asList("name", "start", "stop", "user_id")); // Campos requeridos
+                    put("fields", Arrays.asList("id", "name", "start", "stop", "user_id")); // Campos requeridos
                 }}
             );
 
@@ -234,7 +234,77 @@ public class odoo {
                 if (item instanceof Map) {
                     Map<String, Object> evento = (Map<String, Object>) item;
 
+
                     // Extraer y procesar los datos necesarios
+                    Integer id = (Integer) evento.get("id");
+                    String name = (String) evento.get("name");
+                    String start = (String) evento.get("start");
+                    String stop = (String) evento.get("stop");
+                    Object userIdObj = evento.get("user_id");
+
+                    // Validar y extraer el `user_id`
+                    Integer userId = null;
+                    if (userIdObj instanceof Object[] && ((Object[]) userIdObj).length > 0) {
+                        Object[] userArray = (Object[]) userIdObj;
+                        if (userArray[0] instanceof Integer) {
+                            userId = (Integer) userArray[0];
+                        }
+                    }
+
+                    // Agregar evento a la lista si los datos son válidos
+                    if (name != null && start != null && stop != null && userId != null && userId == registre.id_odoo) {
+                        Map<String, Object> eventoMap = new HashMap<>();
+                        eventoMap.put("name", name);
+                        eventoMap.put("start", start);
+                        eventoMap.put("stop", stop);
+                        eventoMap.put("user_id", userId);
+                        eventoMap.put("id", id);
+                        eventos.add(eventoMap);
+                    }
+                }
+            }
+
+            System.out.println("Eventos obtenidos de Odoo: " + eventos);
+            return eventos;
+
+        } catch (XmlRpcException e) {
+            System.err.println("Error al obtener eventos: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
+    }
+
+    public static List<Map<String, Object>> obtenerEventos() {
+        try {
+            // Parámetros para la llamada `search_read` al modelo `calendar.event`
+            List<Object> params = Arrays.asList(
+                db, userId, PASSWORD,
+                "calendar.event", "search_read",
+                Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los eventos
+                new HashMap<String, Object>() {{
+                    put("fields", Arrays.asList("id", "name", "start", "stop", "user_id")); // Campos requeridos
+                }}
+            );
+
+            // Ejecutar la llamada XML-RPC
+            Object[] result = (Object[]) clientObject.execute("execute_kw", params);
+
+            if (result == null || result.length == 0) {
+                System.err.println("No se obtuvieron datos de eventos de Odoo.");
+                return new ArrayList<>();
+            }
+
+            // Crear lista para almacenar los eventos procesados
+            List<Map<String, Object>> eventos = new ArrayList<>();
+
+            for (Object item : result) {
+                if (item instanceof Map) {
+                    Map<String, Object> evento = (Map<String, Object>) item;
+
+
+                    // Extraer y procesar los datos necesarios
+                    Integer id = (Integer) evento.get("id");
                     String name = (String) evento.get("name");
                     String start = (String) evento.get("start");
                     String stop = (String) evento.get("stop");
@@ -256,6 +326,7 @@ public class odoo {
                         eventoMap.put("start", start);
                         eventoMap.put("stop", stop);
                         eventoMap.put("user_id", userId);
+                        eventoMap.put("id", id);
                         eventos.add(eventoMap);
                     }
                 }
@@ -307,11 +378,13 @@ public class odoo {
             eventoData.put("start", startDate);
             eventoData.put("stop", endDate);
             eventoData.put("user_id", userId); // Se asume que user_id es un campo de relación con `res.users`
+            eventoData.put("create_uid", userId);
+            eventoData.put("write_uid", userId);
             System.out.println(eventoData);
 
             // Parámetros para la llamada XML-RPC a `create` en el modelo `calendar.event`
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD,  // Conexión a Odoo
+                db, 2, PASSWORD,  // Conexión a Odoo
                 "calendar.event", "create", // Llamada a la función create en el modelo calendar.event
                 new Object[]{eventoData}  // Los datos del nuevo evento
             );
@@ -328,6 +401,50 @@ public class odoo {
         } catch (XmlRpcException e) {
             System.err.println("Error al crear el evento: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public static void eliminarEvento(int idEvento) {
+        try {
+            // Conexión con Odoo (asegúrate de usar el cliente adecuado)
+            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            config.setServerURL(new URL(ODOO_URL + "xmlrpc/2/object"));
+            XmlRpcClient client = new XmlRpcClient();
+            client.setConfig(config);
+
+            // Eliminación del evento en Odoo
+            Object[] params = new Object[] { db, PASSWORD, "event.event", "unlink", new Object[] {idEvento} };
+            client.execute("execute_kw", params);
+            System.out.println("Evento eliminado exitosamente");
+        } catch (Exception e) {
+            System.err.println("Error al eliminar el evento: " + e.getMessage());
+        }
+    }
+
+    public static boolean eliminarEventoOdoo(Integer idEvento) {
+        try {
+            // Parámetros para la llamada `unlink` al modelo `calendar.event`
+            List<Object> params = Arrays.asList(
+                db, userId, PASSWORD, // Conexión y credenciales
+                "calendar.event", "unlink", // Modelo y método
+                Arrays.asList(Arrays.asList(idEvento)) // Lista con el ID del evento que se desea eliminar
+            );
+    
+            // Ejecutar la llamada XML-RPC
+            Object result = clientObject.execute("execute_kw", params);
+    
+            // Comprobar si la eliminación fue exitosa (Odoo devuelve 1 si fue exitosa)
+            if (result instanceof Integer && (Integer) result == 1) {
+                System.out.println("Evento con ID " + idEvento + " eliminado exitosamente.");
+                return true;
+            } else {
+                System.err.println("No se pudo eliminar el evento con ID " + idEvento);
+                return false;
+            }
+        } catch (XmlRpcException e) {
+            System.err.println("Error al eliminar evento en Odoo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 

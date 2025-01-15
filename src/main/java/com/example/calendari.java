@@ -1,9 +1,16 @@
 package com.example;
 
 import javax.swing.*;
+
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import com.toedter.calendar.JCalendar;
@@ -21,7 +28,14 @@ import java.util.TimeZone;
 
 public class calendari {
 
-    public static void mostrarCalendari(JFrame parentFrame, String nombreUsuario) {
+    public static void mostrarCalendari(JFrame parentFrame, String nombreUsuario) throws MalformedURLException {
+
+        Connection conexion = null;
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
+        XmlRpcClient client = new XmlRpcClient();
+        client.setConfig(config);
+   
         TimeZone timeZone = TimeZone.getTimeZone("GMT+1");
         Calendar calendar = Calendar.getInstance(timeZone); // Usar UTC+1
 
@@ -39,8 +53,14 @@ public class calendari {
         // Establecer la fecha actual en UTC+1 al calendario
         jCalendar.setCalendar(calendar); // Asignar el calendario con la zona UTC+1
 
+        List<Map<String, Object>> eventos; //Declaramos la lista de eventos
+
         // Lista de eventos desde Odoo
-        List<Map<String, Object>> eventos = odoo.obtenerEventos();
+        if (registre.verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, registre.nombreUsuario) == "Admin") {
+            eventos = odoo.obtenerEventos();
+        } else {
+            eventos = odoo.obtenerEventosDeUser();
+        }
 
         // Formato de fecha esperado (el mismo que Odoo devuelve)
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -184,6 +204,54 @@ public class calendari {
             // Hacer visible la ventana
             ventanaCrearEvento.setVisible(true);
         });
+
+        // Añadir el botón "Mostrar eventos" en la parte inferior del panel
+        JButton btnMostrarEventos = new JButton("Mostrar eventos");
+        btnMostrarEventos.addActionListener(e -> {
+            // Crear un panel para mostrar los eventos
+            JPanel panelEventos = new JPanel();
+            panelEventos.setLayout(new BoxLayout(panelEventos, BoxLayout.Y_AXIS)); // Diseño vertical para los eventos
+            
+            // Obtener la lista de eventos
+            for (Map<String, Object> evento : eventos) {
+                String nombreEvento = (String) evento.get("name");
+                String fechaEvento = (String) evento.get("start"); // Usamos la fecha de inicio
+                Integer idEvento = (Integer) evento.get("id"); // Obtener el ID del evento
+
+                // Crear un JPanel para cada evento
+                JPanel eventoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Panel para cada evento
+                eventoPanel.add(new JLabel(nombreEvento + " el " + fechaEvento)); // Mostrar nombre y fecha del evento
+
+                // Crear un botón "x" para cerrar el evento
+                JButton btnCerrarEvento = new JButton("x");
+
+                // Asociar el ID del evento al ActionListener del botón
+                btnCerrarEvento.addActionListener(e2 -> {
+                    System.out.println("Evento a eliminar con ID: " + idEvento);
+                    // Llamar a la función para eliminar el evento en Odoo
+                    boolean eliminado = odoo.eliminarEventoOdoo(idEvento);
+                });
+                eventoPanel.add(btnCerrarEvento); // Añadir el botón "x" al panel del evento
+
+                // Añadir el panel del evento al panel principal
+                panelEventos.add(eventoPanel);
+            }
+
+            // Crear un JScrollPane para permitir el desplazamiento si hay muchos eventos
+            JScrollPane scrollPaneEventos = new JScrollPane(panelEventos);
+            scrollPaneEventos.setPreferredSize(new Dimension(400, 300)); // Tamaño del JScrollPane
+            
+            // Mostrar los eventos en el JFrame principal o en un panel específico
+            JFrame eventosFrame = new JFrame("Eventos");
+            eventosFrame.setSize(400, 300);
+            eventosFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            eventosFrame.add(scrollPaneEventos); // Añadir el JScrollPane con los eventos al JFrame
+            eventosFrame.setLocationRelativeTo(calendarioFrame); // Centrado respecto al JFrame principal
+            eventosFrame.setVisible(true);
+        });
+        // Añadir el botón al panel inferior
+        panelInferior.add(btnMostrarEventos, BorderLayout.NORTH); // Cambié a NORTH para que esté arriba del JTextArea
+
 
         // Añadir el botón al panel inferior
         panelInferior.add(btnCrearEvento, BorderLayout.SOUTH);

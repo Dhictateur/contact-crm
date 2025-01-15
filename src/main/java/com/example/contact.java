@@ -10,10 +10,14 @@ import org.apache.xmlrpc.XmlRpcException;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,7 +215,12 @@ public class contact {
         //Boton Calendario
         JButton btnCalendario = new JButton("Calendari");
         btnCalendario.addActionListener(e -> {
-            calendari.mostrarCalendari(frame, registre.nombreUsuario);
+            try {
+                calendari.mostrarCalendari(frame, registre.nombreUsuario);
+            } catch (MalformedURLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             System.out.println(registre.nombreUsuario);
         });
 
@@ -306,16 +315,66 @@ public class contact {
             historialDialog.setLocationRelativeTo(frame);
             historialDialog.setLayout(new BorderLayout());
 
+            // Crear el área de texto para el historial
             JTextArea historialArea = new JTextArea();
             historialArea.setEditable(false);
-            
-            // Obtener y mostrar el historial
-            List<String> logEntries = log.obtenerHistorial();
+
+            // Obtener el historial inicial
+            List<String> logEntries = new ArrayList<>(log.obtenerHistorial());
             for (String entry : logEntries) {
                 historialArea.append(entry + "\n");
             }
-            
+
+            // Crear el botón en la parte superior izquierda
+            JButton btnOrdenar = new JButton("Asc.");
+            btnOrdenar.addActionListener(event -> {
+                // Alternar el texto del botón entre "Asc." y "Desc."
+                if (btnOrdenar.getText().equals("Asc.")) {
+                    btnOrdenar.setText("Desc.");
+                } else {
+                    btnOrdenar.setText("Asc.");
+                }
+
+                // Invertir el orden de la lista
+                Collections.reverse(logEntries);
+
+                // Actualizar el contenido del área de texto
+                historialArea.setText(""); // Limpiar el área de texto
+                for (String entry : logEntries) {
+                    historialArea.append(entry + "\n"); // Mostrar el contenido en el nuevo orden
+                }
+            });
+
+            // Crear el botón "Descargar"
+            JButton btnDescargar = new JButton("Descargar");
+            btnDescargar.addActionListener(event -> {
+                // Generar archivo .txt con el contenido de logEntries
+                File archivo = new File("historial_log.txt");
+                try (PrintWriter writer = new PrintWriter(archivo)) {
+                    for (String entry : logEntries) {
+                        writer.println(entry);
+                    }
+                    JOptionPane.showMessageDialog(historialDialog, 
+                        "Archivo guardado como " + archivo.getAbsolutePath(),
+                        "Descarga exitosa", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(historialDialog, 
+                        "Error al guardar el archivo: " + ex.getMessage(), 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            // Crear el panel superior y agregar los botones
+            JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            topPanel.add(btnOrdenar);
+            topPanel.add(btnDescargar);
+
+            // Agregar el panel superior y el área de texto al diálogo
+            historialDialog.add(topPanel, BorderLayout.NORTH);
             historialDialog.add(new JScrollPane(historialArea), BorderLayout.CENTER);
+
             historialDialog.setVisible(true);
         });
 
