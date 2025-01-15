@@ -40,4 +40,11 @@ public class log {
     public static List<String> obtenerHistorial() {
         return new ArrayList<>(historial);
     }
+
+    //Metodo para obtener creacion de contacto
+    public static void registrarContacto(String contactName, String numContacto) {
+        String timestamp = LocalDateTime.now().format(formatter);
+        String mensaje = "Contacto creado: " + contactName + "(" +  numContacto + ") | " + timestamp; 
+        historial.add(mensaje);
+    }
 }

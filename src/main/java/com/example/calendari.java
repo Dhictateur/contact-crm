@@ -229,7 +229,7 @@ public class calendari {
                 btnCerrarEvento.addActionListener(e2 -> {
                     System.out.println("Evento a eliminar con ID: " + idEvento);
                     // Llamar a la función para eliminar el evento en Odoo
-                    boolean eliminado = odoo.eliminarEventoOdoo(idEvento);
+                    odoo.eliminarEventoOdoo(idEvento);
                 });
                 eventoPanel.add(btnCerrarEvento); // Añadir el botón "x" al panel del evento
 

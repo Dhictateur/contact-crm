@@ -24,6 +24,7 @@ public class registre {
 
     public static String nombreUsuario;
     public static int id_odoo;
+    public static String pass;
 
     private static Object uid;
     static JFrame loginFrame;  
@@ -67,6 +68,7 @@ public class registre {
             public void actionPerformed(ActionEvent e) {
                 String nom = nomField.getText();
                 String contrasenya = new String(contrasenyaField.getPassword());
+                pass = contrasenya;
 
                 // Validar campos vacios
                 if (nom.isEmpty() || contrasenya.isEmpty()) {

@@ -265,6 +265,16 @@ public class contact {
         frame.add(panellSuperior, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
 
+        JPanel panelSecundario = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JPanel panelSuperiorContenedor = new JPanel(new BorderLayout());
+        panelSuperiorContenedor.add(panellSuperior, BorderLayout.NORTH);
+        panelSuperiorContenedor.add(panelSecundario, BorderLayout.WEST);
+
+        // Añadir los contenedores al frame
+        frame.add(panelSuperiorContenedor, BorderLayout.NORTH);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
         // Crear un panel inferior
         JPanel panelInferior = new JPanel(new BorderLayout());
         JPanel panelDerecha = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -306,6 +316,14 @@ public class contact {
         });
 
         panelInferior.add(btnChat);
+
+        //Botón "Crear Contacto"
+        JButton btnCrearContacto = new JButton("Crear Contacto");
+        btnCrearContacto.addActionListener(e -> {
+            crearContacte.creacioContacte(frame);
+        });
+
+        panelSecundario.add(btnCrearContacto);
 
         // Botón "Historial"
         JButton btnHistorial = new JButton("Historial");

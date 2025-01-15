@@ -404,24 +404,7 @@ public class odoo {
         }
     }
 
-    public static void eliminarEvento(int idEvento) {
-        try {
-            // Conexión con Odoo (asegúrate de usar el cliente adecuado)
-            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-            config.setServerURL(new URL(ODOO_URL + "xmlrpc/2/object"));
-            XmlRpcClient client = new XmlRpcClient();
-            client.setConfig(config);
-
-            // Eliminación del evento en Odoo
-            Object[] params = new Object[] { db, PASSWORD, "event.event", "unlink", new Object[] {idEvento} };
-            client.execute("execute_kw", params);
-            System.out.println("Evento eliminado exitosamente");
-        } catch (Exception e) {
-            System.err.println("Error al eliminar el evento: " + e.getMessage());
-        }
-    }
-
-    public static boolean eliminarEventoOdoo(Integer idEvento) {
+    public static void eliminarEventoOdoo(Integer idEvento) {
         try {
             // Parámetros para la llamada `unlink` al modelo `calendar.event`
             List<Object> params = Arrays.asList(
@@ -430,22 +413,40 @@ public class odoo {
                 Arrays.asList(Arrays.asList(idEvento)) // Lista con el ID del evento que se desea eliminar
             );
     
+            System.out.println("Evento eliminado con ID = " + idEvento);
             // Ejecutar la llamada XML-RPC
             Object result = clientObject.execute("execute_kw", params);
     
-            // Comprobar si la eliminación fue exitosa (Odoo devuelve 1 si fue exitosa)
-            if (result instanceof Integer && (Integer) result == 1) {
-                System.out.println("Evento con ID " + idEvento + " eliminado exitosamente.");
-                return true;
-            } else {
-                System.err.println("No se pudo eliminar el evento con ID " + idEvento);
-                return false;
-            }
         } catch (XmlRpcException e) {
             System.err.println("Error al eliminar evento en Odoo: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
     }
 
+    public static void crearContacto(int userId, String nombre, String telefono, String email) throws XmlRpcException {
+        try {
+            Map<String, Object> contactoData = new HashMap<>();
+            contactoData.put("name", nombre);
+            contactoData.put("phone", telefono);
+            contactoData.put("email", email);
+
+            List<Object> params = Arrays.asList(
+                db, userId, registre.pass,  // Conexión a Odoo
+                "res.partner", "create",
+                new Object[]{contactoData}  // Los datos del nuevo contacto
+            );
+
+            // Ejecutar la llamada XML-RPC para crear el evento
+            Object result = clientObject.execute("execute_kw", params);
+
+            if (result != null) {
+                System.out.println("Contacto creado con éxito. ID: " + result);
+            } 
+            System.out.println(contactoData);
+
+        } catch (XmlRpcException e) {
+            System.err.println("Error al crear el contacto: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
