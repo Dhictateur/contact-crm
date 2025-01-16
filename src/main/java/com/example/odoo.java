@@ -81,7 +81,7 @@ public class odoo {
         try {
             // Parámetros para la llamada `search_read` sin filtros
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD,
+                db, 2, PASSWORD,
                 "res.partner", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtro, obtendremos todos los contactos
                 new HashMap<String, Object>() {{
@@ -155,7 +155,7 @@ public class odoo {
         try {
             // Parámetros para la llamada `search_read`
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD,
+                db, 2, PASSWORD,
                 "res.users", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los usuarios
                 new HashMap<String, Object>() {{
@@ -211,7 +211,7 @@ public class odoo {
         try {
             // Parámetros para la llamada `search_read` al modelo `calendar.event`
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD,
+                db, 2, PASSWORD,
                 "calendar.event", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los eventos
                 new HashMap<String, Object>() {{
@@ -408,7 +408,7 @@ public class odoo {
         try {
             // Parámetros para la llamada `unlink` al modelo `calendar.event`
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD, // Conexión y credenciales
+                db, 2, PASSWORD, // Conexión y credenciales
                 "calendar.event", "unlink", // Modelo y método
                 Arrays.asList(Arrays.asList(idEvento)) // Lista con el ID del evento que se desea eliminar
             );
@@ -449,4 +449,33 @@ public class odoo {
             e.printStackTrace();
         }
     }
+
+    public static void crearUsuario(String login, String pass) {
+        try {
+            Map<String, Object> usuarioData = new HashMap<>();
+            usuarioData.put("login", login);
+            usuarioData.put("name", login);
+            usuarioData.put("password", pass);
+
+            List<Object> params = Arrays.asList(
+                db, 2, PASSWORD,  // Conexión a Odoo
+                "res.users", "create",
+                new Object[]{usuarioData}  // Los datos del nuevo contacto
+            );
+
+            // Ejecutar la llamada XML-RPC para crear el evento
+            Object result = clientObject.execute("execute_kw", params);
+
+            if (result != null) {
+                System.out.println("Usuario creado con éxito. ID: " + result);
+            } 
+            System.out.println(usuarioData);
+
+        } catch (XmlRpcException e) {
+            System.err.println("Error al crear el usuario: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }

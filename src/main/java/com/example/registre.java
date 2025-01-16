@@ -114,10 +114,41 @@ public class registre {
             }
         });
 
+        // Añadir el botón "Crear usuario" al lado del botón "Iniciar sesión"
+        JButton btCrearUsuario = new JButton("Crear Usuario");
+        btCrearUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nom = nomField.getText();
+                String contrasenya = new String(contrasenyaField.getPassword());
+
+                // Validar campos vacíos
+                if (nom.isEmpty() || contrasenya.isEmpty()) {
+                    JOptionPane.showMessageDialog(loginFrame, "Por favor, complete todos los campos.");
+                    return;
+                }
+
+                // Llamar a la función para crear el usuario en Odoo
+                try {
+                    odoo.crearUsuario(nom, contrasenya);
+                    JOptionPane.showMessageDialog(loginFrame, "Usuario creado con éxito.");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(loginFrame, "Error al crear el usuario: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+
+                // Limpiar los campos después de crear el usuario
+                nomField.setText("");
+                contrasenyaField.setText("");
+            }
+        });
+
         loginFrame.add(btIniciarSessio);
+        // Añadir el botón "Crear Usuario" al panel
+        loginFrame.add(btCrearUsuario);
 
         // Macro
-        loginFrame.setSize(300, 150);
+        loginFrame.setSize(400, 200);
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         loginFrame.setVisible(true); // Mostrar la ventana por primera vez
     }
