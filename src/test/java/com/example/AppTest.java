@@ -50,8 +50,8 @@ public class AppTest {
     @Test
     public void testFiltrarContactos() {
         List<contact> contactosOriginales = new ArrayList<>();
-        contactosOriginales.add(new contact("Juan Pérez", "123456789"));
-        contactosOriginales.add(new contact("Ana López", "987654321"));
+        contactosOriginales.add(new contact(1, "Juan Pérez", "123456789"));
+        contactosOriginales.add(new contact(2, "Ana López", "987654321"));
         
         List<contact> contactosFiltrados = new ArrayList<>(contactosOriginales);
         

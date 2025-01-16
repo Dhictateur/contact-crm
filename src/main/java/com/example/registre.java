@@ -103,7 +103,12 @@ public class registre {
                             y.printStackTrace();
                             return; // Manejo general para otras excepciones no anticipadas
                         }
-                    contact.mostrarAgenda(); // Llamar a la interfaz de contacto
+                    try {
+                        contact.mostrarAgenda();
+                    } catch (MalformedURLException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    } // Llamar a la interfaz de contacto
                 } else {
                     JOptionPane.showMessageDialog(loginFrame, "Credenciales incorrectas.");
                 }

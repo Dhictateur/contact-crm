@@ -7,6 +7,8 @@ import java.sql.Statement;
 import javax.swing.*;
 
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public class contact {
+    private int id;
     private String nombre;
     private String telefono;
     public static String userType; // Variable para almacenar el tipo de usuario
@@ -31,9 +34,14 @@ public class contact {
     private static List<contact> contactesOriginals = new ArrayList<>();
     private static List<contact> contactesFiltrats = new ArrayList<>();
 
-    public contact(String nombre, String telefono) {
+    public contact(Integer id, String nombre, String telefono) {
+        this.id = id;
         this.nombre = nombre; 
         this.telefono = telefono;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getNom() {
@@ -55,7 +63,15 @@ public class contact {
         LoginSuccess = 0;
     }
 
-    public static void mostrarAgenda() {
+
+
+    public static void mostrarAgenda() throws MalformedURLException {
+
+        Connection conexion = null;
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
+        XmlRpcClient client = new XmlRpcClient();
+        client.setConfig(config);
         
         try {
             // Paso 1: Obtener el ID del usuario actual usando `registre.nombreUsuario`
@@ -84,11 +100,12 @@ public class contact {
             // Paso 3: Filtrar los contactos según el `owner_id`
             contactesOriginals = new ArrayList<>();
             for (Map<String, Object> datos : contactosOdoo) {
+                Integer contactId = (Integer) datos.get("id");
                 Integer ownerId = (Integer) datos.get("owner_id");
                 if (ownerId != null && ownerId.equals(usuarioId)) {
                     String name = (String) datos.get("name");
                     String phone = (String) datos.get("phone");
-                    contact contacto = new contact(name, phone);
+                    contact contacto = new contact(contactId, name, phone);
                     contactesOriginals.add(contacto);
                 }
             }
@@ -119,12 +136,95 @@ public class contact {
                 JLabel nomLabel = new JLabel(contacte.getNom() + " (" + contacte.getTelefon() + ")");
                 contactePanel.add(nomLabel);
 
+                // Boton de trucar
                 JButton trucarButton = new JButton("Trucar");
                 trucarButton.addActionListener(e -> {
                     JOptionPane.showMessageDialog(frame, "Trucant a " + contacte.getNom());
                     log.registrarLlamada(contacte.getNom());
                 });
                 contactePanel.add(trucarButton);
+
+                // Botón "Editar"
+                JButton editarButton = new JButton("Editar");
+                editarButton.addActionListener(e -> {
+                    // Obtener los datos del contacto
+                    int contactId = contacte.getId();  // Asegúrate de que 'contacte' tiene los datos correctos
+                    String nombre = contacte.getNom();
+                    String telefono = contacte.getTelefon();
+
+                    // Crear un cuadro de diálogo para editar el contacto
+                    JDialog editarDialog = new JDialog(frame, "Editar Contacto", true);
+                    editarDialog.setLayout(new GridLayout(3, 2));
+
+                    // Campos para editar nombre y teléfono
+                    JTextField nombreField = new JTextField(nombre);
+                    JTextField telefonoField = new JTextField(telefono);
+
+                    editarDialog.add(new JLabel("Nombre:"));
+                    editarDialog.add(nombreField);
+
+                    editarDialog.add(new JLabel("Teléfono:"));
+                    editarDialog.add(telefonoField);
+
+                    // Botón para guardar los cambios
+                    JButton guardarButton = new JButton("Guardar");
+                    guardarButton.addActionListener(e1 -> {
+                        String nuevoNombre = nombreField.getText();
+                        String nuevoTelefono = telefonoField.getText();
+
+                        // Validar datos
+                        if (nuevoNombre.isEmpty() || nuevoTelefono.isEmpty()) {
+                            JOptionPane.showMessageDialog(editarDialog, "Los campos no pueden estar vacíos.");
+                            return;
+                        }
+
+                        try {
+                            System.out.println(contactId);
+                            // Crear parámetros para la llamada XML-RPC
+                            Map<String, Object> values = new HashMap<>();
+                            values.put("name", nuevoNombre);
+                            values.put("phone", nuevoTelefono);
+
+                            // Ejecutar la llamada XML-RPC para actualizar el contacto
+                            List<Object> writeParams = Arrays.asList(
+                                odoo.db, registre.id_odoo, registre.pass,
+                                "res.partner", "write",
+                                Arrays.asList(
+                                    Arrays.asList(contactId), // ID del contacto a actualizar
+                                    values // Los nuevos valores a escribir
+                                )
+                            );
+
+                            boolean success = (boolean) client.execute("execute_kw", writeParams);
+                            if (success) {
+                                JOptionPane.showMessageDialog(editarDialog, "Datos del contacto actualizados correctamente.");
+                                editarDialog.dispose(); // Cerrar la ventana
+                            } else {
+                                JOptionPane.showMessageDialog(editarDialog, "Error al actualizar los datos del contacto.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(editarDialog, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+
+                    editarDialog.add(new JLabel());  // Filler to align the button properly
+                    editarDialog.add(guardarButton);
+
+                    editarDialog.pack();
+                    editarDialog.setLocationRelativeTo(frame);
+                    editarDialog.setVisible(true);
+                });
+                contactePanel.add(editarButton);
+
+                // Botón "X" para eliminar
+                int contactId = contacte.getId();
+                JButton eliminarButton = new JButton("X");
+                eliminarButton.addActionListener(e -> {
+                    System.out.println("Contacto a eliminar: " + contactId);
+                    odoo.eliminarContactOdoo(contactId);
+                });
+                contactePanel.add(eliminarButton);
 
                 panel.add(contactePanel);
             }
@@ -216,6 +316,7 @@ public class contact {
         JButton btnCalendario = new JButton("Calendari");
         btnCalendario.addActionListener(e -> {
             try {
+                actualizarLlista.run();
                 calendari.mostrarCalendari(frame, registre.nombreUsuario);
             } catch (MalformedURLException e1) {
                 // TODO Auto-generated catch block

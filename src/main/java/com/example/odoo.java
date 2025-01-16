@@ -85,7 +85,7 @@ public class odoo {
                 "res.partner", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtro, obtendremos todos los contactos
                 new HashMap<String, Object>() {{
-                    put("fields", Arrays.asList("name", "phone", "owner_id")); // Campos que queremos obtener
+                    put("fields", Arrays.asList("name", "phone", "owner_id", "id")); // Campos que queremos obtener
                 }}
             );
     
@@ -108,6 +108,7 @@ public class odoo {
                     // Comprobar si el campo 'phone' no es nulo y no es un valor booleano
                     Object phoneValue = contacto.get("phone");
                     Object ownerValue = contacto.get("owner_id");
+                    Integer id = (Integer) contacto.get("id");
                     
                     if (phoneValue instanceof String && ownerValue != null) {
                         Integer ownerId = null; // Inicializar el ID del owner
@@ -124,6 +125,7 @@ public class odoo {
                             contactoMap.put("name", contacto.get("name"));
                             contactoMap.put("phone", phoneValue);
                             contactoMap.put("owner_id", ownerId);
+                            contactoMap.put("id", id);
                             contactos.add(contactoMap);
                         }
                     }
@@ -477,5 +479,60 @@ public class odoo {
         }
     }
 
+    public static void modificarContacto(int contactId, String nuevoNombre, String nuevoTelefono, int userId) {
+        try {
+            // Crear un mapa con los valores a actualizar
+            Map<String, Object> valoresActualizados = new HashMap<>();
+            valoresActualizados.put("name", nuevoNombre);
+            valoresActualizados.put("phone", nuevoTelefono);
+    
+            // Validar que se incluyan campos para modificar
+            if (valoresActualizados.isEmpty()) {
+                System.out.println("No hay valores para actualizar.");
+                return;
+            }
+    
+            // Parámetros para la llamada XML-RPC
+            Object[] params = new Object[]{
+                db,                    // Base de datos
+                userId,                // UID del usuario autenticado
+                registre.pass,         // Contraseña del usuario
+                "res.partner",         // Nombre del modelo
+                "write",               // Método para modificar
+                Arrays.asList(contactId),   // ID del contacto (en una lista)
+                valoresActualizados    // Nuevos valores
+            };
+    
+            // Ejecutar la llamada XML-RPC
+            Boolean resultado = (Boolean) clientObject.execute("execute_kw", params);
+    
+            if (resultado) {
+                System.out.println("Contacto modificado con éxito.");
+            } else {
+                System.out.println("Error al modificar el contacto.");
+            }
+        } catch (XmlRpcException e) {
+            System.err.println("Error al modificar el contacto: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
+    public static void eliminarContactOdoo(Integer idContact) {
+        try {
+            // Parámetros para la llamada `unlink` al modelo `calendar.event`
+            List<Object> params = Arrays.asList(
+                db, registre.id_odoo, registre.pass, // Conexión y credenciales
+                "res.partner", "unlink", // Modelo y método
+                Arrays.asList(Arrays.asList(idContact)) // Lista con el ID del evento que se desea eliminar
+            );
+    
+            System.out.println("Evento eliminado con ID = " + idContact);
+            // Ejecutar la llamada XML-RPC
+            Object result = clientObject.execute("execute_kw", params);
+    
+        } catch (XmlRpcException e) {
+            System.err.println("Error al eliminar evento en Odoo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
