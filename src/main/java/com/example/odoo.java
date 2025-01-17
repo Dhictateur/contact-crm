@@ -281,7 +281,7 @@ public class odoo {
         try {
             // Parámetros para la llamada `search_read` al modelo `calendar.event`
             List<Object> params = Arrays.asList(
-                db, userId, PASSWORD,
+                db, 2, PASSWORD,
                 "calendar.event", "search_read",
                 Arrays.asList(Arrays.asList()), // Sin filtros, obtener todos los eventos
                 new HashMap<String, Object>() {{

@@ -57,7 +57,7 @@ public class calendari {
         List<Map<String, Object>> eventos; //Declaramos la lista de eventos
 
         // Lista de eventos desde Odoo
-        if (registre.verificarTipoUsuario(client, odoo.db, odoo.PASSWORD, registre.nombreUsuario) == "Admin") {
+        if (registre.verificarTipoUsuario(client, odoo.db, registre.pass, registre.nombreUsuario) == "Admin") {
             eventos = odoo.obtenerEventos();
         } else {
             eventos = odoo.obtenerEventosDeUser();
@@ -383,7 +383,7 @@ public class calendari {
             
             // Mostrar los eventos en el JFrame principal o en un panel específico
             JFrame eventosFrame = new JFrame("Eventos");
-            eventosFrame.setSize(400, 300);
+            eventosFrame.setSize(500, 400);
             eventosFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             eventosFrame.add(scrollPaneEventos); // Añadir el JScrollPane con los eventos al JFrame
             eventosFrame.setLocationRelativeTo(calendarioFrame); // Centrado respecto al JFrame principal

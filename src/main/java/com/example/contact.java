@@ -33,6 +33,7 @@ public class contact {
 
     private static List<contact> contactesOriginals = new ArrayList<>();
     private static List<contact> contactesFiltrats = new ArrayList<>();
+    public static List<contact> contactesFiltratsBuscador = new ArrayList<>();
 
     public contact(Integer id, String nombre, String telefono) {
         this.id = id;
@@ -110,15 +111,12 @@ public class contact {
                 }
             }
     
-            // Paso 4: Clonar la lista original a la lista filtrada
-            contactesFiltrats = new ArrayList<>(contactesOriginals);
-    
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error al obtener contactos de Odoo");
         }
 
-        List<contact> contactesFiltrats = new ArrayList<>(contactesOriginals);
+        contactesFiltrats = new ArrayList<>(contactesOriginals);
         List<Grup> grups = new ArrayList<>();
 
         JFrame frame = new JFrame("Agenda de Contactes");
@@ -316,7 +314,6 @@ public class contact {
         JButton btnCalendario = new JButton("Calendari");
         btnCalendario.addActionListener(e -> {
             try {
-                actualizarLlista.run();
                 calendari.mostrarCalendari(frame, registre.nombreUsuario);
             } catch (MalformedURLException e1) {
                 // TODO Auto-generated catch block
@@ -426,6 +423,20 @@ public class contact {
 
         panelSecundario.add(btnCrearContacto);
 
+        //Botón "Actualizar Lista"
+        JButton btnActualizar = new JButton("Actualizar");
+        btnActualizar.addActionListener(e -> {
+            try {
+                actualizarContactes(); // Recarga la lista de contactos
+                actualizarLlista.run(); // Refresca la interfaz con la nueva lista
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "Error al actualizar la lista de contactos.");
+            }
+        });
+
+        panelSecundario.add(btnActualizar);
+
         // Botón "Historial"
         JButton btnHistorial = new JButton("Historial");
         btnHistorial.addActionListener(e -> {
@@ -534,6 +545,63 @@ public class contact {
 
         public List<contact> getContactes() {
             return contactes;
+        }
+    }
+
+    public static void actualizarContactes() throws MalformedURLException, XmlRpcException {
+        // Limpia la lista de contactos filtrados
+        contactesFiltrats.clear();
+    
+        // Vuelve a obtener los contactos de Odoo
+        Connection conexion = null;
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setServerURL(new URL(odoo.ODOO_URL + "xmlrpc/2/object"));
+        XmlRpcClient client = new XmlRpcClient();
+        client.setConfig(config);
+    
+        try {
+            // Obtener el ID del usuario actual usando `registre.nombreUsuario`
+            String usuarioActual = registre.nombreUsuario;
+            Integer usuarioId = null;
+            
+            // Buscar el usuario actual en la lista de usuarios
+            List<Map<String, Object>> usuarios = odoo.obtenerUsuariosConLogin();
+            for (Map<String, Object> usuario : usuarios) {
+                String login = (String) usuario.get("login");
+                if (usuarioActual.equals(login)) {
+                    usuarioId = (Integer) usuario.get("id");
+                    break;
+                }
+            }
+    
+            if (usuarioId == null) {
+                JOptionPane.showMessageDialog(null, "No se encontró el ID del usuario actual.");
+                return;
+            }
+    
+            // Obtener los contactos desde Odoo
+            List<Map<String, Object>> contactosOdoo = odoo.obtenerContactos();
+    
+            // Filtrar los contactos según el `owner_id`
+            contactesOriginals = new ArrayList<>();
+            for (Map<String, Object> datos : contactosOdoo) {
+                Integer contactId = (Integer) datos.get("id");
+                Integer ownerId = (Integer) datos.get("owner_id");
+                if (ownerId != null && ownerId.equals(usuarioId)) {
+                    String name = (String) datos.get("name");
+                    String phone = (String) datos.get("phone");
+                    contact contacto = new contact(contactId, name, phone);
+                    contactesOriginals.add(contacto);
+                }
+            }
+    
+            // Actualizar la lista filtrada
+            contactesFiltrats.clear();
+            contactesFiltrats.addAll(contactesOriginals);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al obtener contactos de Odoo");
         }
     }
 }
