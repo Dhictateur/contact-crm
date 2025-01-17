@@ -17,6 +17,7 @@ import com.toedter.calendar.JCalendar;
 import com.toedter.calendar.JDateChooser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -221,6 +222,145 @@ public class calendari {
                 // Crear un JPanel para cada evento
                 JPanel eventoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Panel para cada evento
                 eventoPanel.add(new JLabel(nombreEvento + " el " + fechaEvento)); // Mostrar nombre y fecha del evento
+
+                // Crear un botón "Editar" para editar el evento
+                JButton btnEditarEvento = new JButton("Editar");
+                btnEditarEvento.addActionListener(e2 -> {
+                    // Crear un nuevo JFrame para la edición
+                    JFrame ventanaEdicion = new JFrame("Editar Evento");
+                    ventanaEdicion.setSize(400, 350); 
+                    ventanaEdicion.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+                    // Crear un panel para la edición
+                    JPanel panelEdicion = new JPanel();
+                    panelEdicion.setLayout(new GridLayout(6, 2));
+
+                    // Campos de edición con los valores actuales del evento
+                    JLabel lblNombreEvento = new JLabel("Nombre del Evento:");
+                    JTextField txtNombreEvento = new JTextField((String) evento.get("name"), 20);
+                    panelEdicion.add(lblNombreEvento);
+                    panelEdicion.add(txtNombreEvento);
+
+                    JLabel lblFechaInicio = new JLabel("Fecha de Inicio:");
+                    JDateChooser jDateChooserInicio = new JDateChooser();
+                    try {
+                        jDateChooserInicio.setDate(formatter.parse((String) evento.get("start")));
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+                    panelEdicion.add(lblFechaInicio);
+                    panelEdicion.add(jDateChooserInicio);
+
+                    JLabel lblHoraInicio = new JLabel("Hora de Inicio:");
+                    SpinnerDateModel modelHoraInicio = new SpinnerDateModel();
+                    JSpinner spHoraInicio = new JSpinner(modelHoraInicio);
+                    spHoraInicio.setEditor(new JSpinner.DateEditor(spHoraInicio, "HH:mm"));
+                    Calendar calInicio = Calendar.getInstance();
+                    try {
+                        Date startDate = formatter.parse((String) evento.get("start"));
+                        calInicio.setTime(startDate);
+                        spHoraInicio.setValue(startDate);
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+                    panelEdicion.add(lblHoraInicio);
+                    panelEdicion.add(spHoraInicio);
+
+                    JLabel lblFechaFin = new JLabel("Fecha de Fin:");
+                    JDateChooser jDateChooserFin = new JDateChooser();
+                    try {
+                        jDateChooserFin.setDate(formatter.parse((String) evento.get("stop")));
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+                    panelEdicion.add(lblFechaFin);
+                    panelEdicion.add(jDateChooserFin);
+
+                    JLabel lblHoraFin = new JLabel("Hora de Fin:");
+                    SpinnerDateModel modelHoraFin = new SpinnerDateModel();
+                    JSpinner spHoraFin = new JSpinner(modelHoraFin);
+                    spHoraFin.setEditor(new JSpinner.DateEditor(spHoraFin, "HH:mm"));
+                    Calendar calFin = Calendar.getInstance();
+                    try {
+                        Date endDate = formatter.parse((String) evento.get("stop"));
+                        calFin.setTime(endDate);
+                        spHoraFin.setValue(endDate);
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+                    panelEdicion.add(lblHoraFin);
+                    panelEdicion.add(spHoraFin);
+
+                    // Botón para guardar cambios
+                    JButton btnGuardarCambios = new JButton("Guardar Cambios");
+                    btnGuardarCambios.addActionListener(e3 -> {
+                        String nuevoNombre = txtNombreEvento.getText();
+                        Date nuevaFechaInicio = jDateChooserInicio.getDate();
+                        Date nuevaFechaFin = jDateChooserFin.getDate();
+
+                        // Combinar las fechas con las horas seleccionadas
+                        calInicio.setTime(nuevaFechaInicio);
+                        calInicio.set(Calendar.HOUR_OF_DAY, ((Date) spHoraInicio.getValue()).getHours());
+                        calInicio.set(Calendar.MINUTE, ((Date) spHoraInicio.getValue()).getMinutes());
+
+                        calFin.setTime(nuevaFechaFin);
+                        calFin.set(Calendar.HOUR_OF_DAY, ((Date) spHoraFin.getValue()).getHours());
+                        calFin.set(Calendar.MINUTE, ((Date) spHoraFin.getValue()).getMinutes());
+
+                        Date nuevaFechaHorasInicio = calInicio.getTime();
+                        Date nuevaFechaHorasFin = calFin.getTime();
+
+                        // Validar datos
+                        if (nuevoNombre.isEmpty() || nuevaFechaHorasInicio == null || nuevaFechaHorasFin == null) {
+                            JOptionPane.showMessageDialog(ventanaEdicion, "Por favor, complete todos los campos.");
+                            return;
+                        }
+
+                        try {
+                            // Convertir las fechas al formato adecuado
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            String fechaInicioStr = sdf.format(nuevaFechaHorasInicio); // Fecha/hora de inicio como String
+                            String fechaFinStr = sdf.format(nuevaFechaHorasFin); // Fecha/hora de fin como String
+                        
+                            // Crear parámetros para la llamada XML-RPC
+                            Map<String, Object> values = new HashMap<>();
+                            values.put("name", nuevoNombre); // Nombre del evento
+                            values.put("start", fechaInicioStr); // Fecha/hora de inicio
+                            values.put("stop", fechaFinStr); // Fecha/hora de fin
+                        
+                            // Ejecutar la llamada XML-RPC para actualizar el evento
+                            List<Object> writeParams = Arrays.asList(
+                                odoo.db, registre.id_odoo, registre.pass,
+                                "calendar.event", "write",
+                                Arrays.asList(
+                                    Arrays.asList(idEvento), // ID del evento a actualizar
+                                    values // Los nuevos valores a escribir
+                                )
+                            );
+                        
+                            boolean success = (boolean) client.execute("execute_kw", writeParams);
+                            if (success) {
+                                JOptionPane.showMessageDialog(ventanaEdicion, "Evento actualizado exitosamente.");
+                                ventanaEdicion.dispose(); // Cerrar la ventana
+                            } else {
+                                JOptionPane.showMessageDialog(ventanaEdicion, "Error al actualizar el evento.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(ventanaEdicion, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+
+                    // Agregar el botón al panel
+                    panelEdicion.add(btnGuardarCambios);
+
+                    // Añadir el panel al JFrame
+                    ventanaEdicion.add(panelEdicion);
+
+                    // Mostrar la ventana de edición
+                    ventanaEdicion.setVisible(true);
+                });
+                eventoPanel.add(btnEditarEvento); // Añadir el botón "Editar" al panel del evento
 
                 // Crear un botón "x" para cerrar el evento
                 JButton btnCerrarEvento = new JButton("x");
