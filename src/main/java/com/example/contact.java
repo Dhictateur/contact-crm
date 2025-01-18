@@ -220,6 +220,13 @@ public class contact {
                 JButton eliminarButton = new JButton("X");
                 eliminarButton.addActionListener(e -> {
                     System.out.println("Contacto a eliminar: " + contactId);
+                    // Muestra un mensaje de confirmación
+                    JOptionPane.showMessageDialog(
+                        null, // Ventana principal (null usa el centro de la pantalla)
+                        "Contacto eliminado correctamente", // Mensaje
+                        "Eliminación exitosa", // Título del cuadro de diálogo
+                        JOptionPane.INFORMATION_MESSAGE // Tipo de mensaje
+                    );
                     odoo.eliminarContactOdoo(contactId);
                 });
                 contactePanel.add(eliminarButton);

@@ -368,6 +368,12 @@ public class calendari {
                 // Asociar el ID del evento al ActionListener del botón
                 btnCerrarEvento.addActionListener(e2 -> {
                     System.out.println("Evento a eliminar con ID: " + idEvento);
+                    JOptionPane.showMessageDialog(
+                        null, // Ventana principal (null usa el centro de la pantalla)
+                        "Evento eliminado correctamente", // Mensaje
+                        "Eliminación exitosa", // Título del cuadro de diálogo
+                        JOptionPane.INFORMATION_MESSAGE // Tipo de mensaje
+                    );
                     // Llamar a la función para eliminar el evento en Odoo
                     odoo.eliminarEventoOdoo(idEvento);
                 });

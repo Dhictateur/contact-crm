@@ -526,7 +526,7 @@ public class odoo {
                 Arrays.asList(Arrays.asList(idContact)) // Lista con el ID del evento que se desea eliminar
             );
     
-            System.out.println("Evento eliminado con ID = " + idContact);
+            System.out.println("Contacto eliminado con ID = " + idContact);
             // Ejecutar la llamada XML-RPC
             Object result = clientObject.execute("execute_kw", params);
     
